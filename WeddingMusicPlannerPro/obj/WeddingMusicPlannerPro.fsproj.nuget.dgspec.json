@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj": {}
+    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj": {}
   },
   "projects": {
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj": {
+    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj",
+        "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj",
         "projectName": "WeddingMusicPlannerPro",
-        "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj",
+        "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj",
         "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro\\obj\\",
+        "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

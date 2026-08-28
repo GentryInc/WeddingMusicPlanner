@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "pP7gwFulvQ8=",
+  "dgSpecHash": "Y9L8LXedKm8=",
   "success": true,
-  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\corwy\\.nuget\\packages\\communitytoolkit.mvvm\\8.3.2\\communitytoolkit.mvvm.8.3.2.nupkg.sha512",
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.data.sqlite.core\\8.0.10\\microsoft.data.sqlite.core.8.0.10.nupkg.sha512",

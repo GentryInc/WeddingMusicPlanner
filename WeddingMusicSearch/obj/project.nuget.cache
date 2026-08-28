@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "h6//fV4PCN0=",
+  "dgSpecHash": "srFfxao0xck=",
   "success": true,
-  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicSearch\\WeddingMusicSearch.csproj",
+  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.data.sqlite.core\\8.0.10\\microsoft.data.sqlite.core.8.0.10.nupkg.sha512",
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.10\\microsoft.entityframeworkcore.8.0.10.nupkg.sha512",

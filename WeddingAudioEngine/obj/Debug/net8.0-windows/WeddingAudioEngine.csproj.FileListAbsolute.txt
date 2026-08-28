@@ -10,3 +10,16 @@ C:\Users\corwy\source\repos\WeddingMusicPlannerPro\WeddingAudioEngine\obj\Debug\
 C:\Users\corwy\source\repos\WeddingMusicPlannerPro\WeddingAudioEngine\obj\Debug\net8.0-windows\refint\WeddingAudioEngine.dll
 C:\Users\corwy\source\repos\WeddingMusicPlannerPro\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.pdb
 C:\Users\corwy\source\repos\WeddingMusicPlannerPro\WeddingAudioEngine\obj\Debug\net8.0-windows\ref\WeddingAudioEngine.dll
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\bin\Debug\net8.0-windows\WeddingAudioEngine.deps.json
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\bin\Debug\net8.0-windows\WeddingAudioEngine.dll
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\bin\Debug\net8.0-windows\WeddingAudioEngine.pdb
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.csproj.AssemblyReference.cache
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.AssemblyInfoInputs.cache
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.AssemblyInfo.cs
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.csproj.CoreCompileInputs.cache
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.sourcelink.json
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.dll
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\refint\WeddingAudioEngine.dll
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\WeddingAudioEngine.pdb
+C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine\obj\Debug\net8.0-windows\ref\WeddingAudioEngine.dll

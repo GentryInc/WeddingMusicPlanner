@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "S76kNo8WADo=",
+  "dgSpecHash": "sBihYPRS+SU=",
   "success": true,
-  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicData.Tests\\WeddingMusicData.Tests.csproj",
+  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData.Tests\\WeddingMusicData.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.codecoverage\\17.11.1\\microsoft.codecoverage.17.11.1.nupkg.sha512",
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.data.sqlite.core\\8.0.10\\microsoft.data.sqlite.core.8.0.10.nupkg.sha512",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "i7RmUMGXZAU=",
+  "dgSpecHash": "+iX2DI2ji10=",
   "success": true,
-  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj",
+  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro\\WeddingMusicPlannerPro.fsproj",
   "expectedPackageFiles": [
     "C:\\Users\\corwy\\.nuget\\packages\\avalonia\\12.1.1\\avalonia.12.1.1.nupkg.sha512",
     "C:\\Users\\corwy\\.nuget\\packages\\avalonia.angle.windows.natives\\2.1.27548.20260419\\avalonia.angle.windows.natives.2.1.27548.20260419.nupkg.sha512",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "gWRPBgfxRfs=",
+  "dgSpecHash": "dn/LC8GNqx4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlannerPro\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
+  "projectFilePath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",

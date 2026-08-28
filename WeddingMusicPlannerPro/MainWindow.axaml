@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WeddingMusicPlannerPro.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="WeddingMusicPlannerPro.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Wedding Audio Engine"
+        Background="#1E1E1E">
+
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
+		<TextBlock Text="{Binding CurrentTrackName}"
+                   HorizontalAlignment="Center"
+                   FontSize="22"
+                   Foreground="#E0E0E0"
+                   FontWeight="SemiBold"/>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+			<Button Command="{Binding LoadTrackCommand}" Content="Load Track" Width="120" HorizontalContentAlignment="Center"/>
+			<Button Command="{Binding PlayCommand}" Content="Play" Width="100" HorizontalContentAlignment="Center" Background="#2E8B57" Foreground="White"/>
+			<Button Command="{Binding PauseCommand}" Content="Pause" Width="100" HorizontalContentAlignment="Center" Background="#4682B4" Foreground="White"/>
+		</StackPanel>
+
+		<!-- The tactical override -->
+		<Button Command="{Binding EmergencyFadeCommand}"
+                Content="EMERGENCY FADE (3s)"
+                Width="340" Height="70"
+                Background="#B22222" Foreground="White"
+                FontSize="20" FontWeight="Bold"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                HorizontalAlignment="Center"
+                CornerRadius="8"/>
+	</StackPanel>
+</Window>

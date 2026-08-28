@@ -1,0 +1,73 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using WeddingMusicData.Models;
+
+namespace WeddingMusicPlannerPro.Wpf.ViewModels;
+
+/// <summary>
+/// An 'Event Segment Bucket' (Prelude, Processional, Cocktail Hour, …). Holds an
+/// ordered, observable collection of tracks that the UI can drag between buckets.
+/// </summary>
+public partial class EventSegmentViewModel : ObservableObject
+{
+    public EventSegmentViewModel(PlaylistSection section)
+    {
+        SectionId = section.Id;
+        _name = section.Name;
+        _transitionMode = section.TransitionMode;
+        _isLooping = section.IsLooping;
+        _nextSectionId = section.NextSectionId;
+        Tracks = new ObservableCollection<TrackViewModel>(
+            section.Items
+                   .Where(i => i.Track is not null)
+                   .OrderBy(i => i.Position)
+                   .Select(i => new TrackViewModel(i.Track!)));
+    }
+
+    public int SectionId { get; }
+
+    [ObservableProperty] private string _name;
+    [ObservableProperty] private TransitionMode _transitionMode;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LoopDisplay))]
+    private bool _isLooping;
+
+    /// <summary>Id of the playlist this one chains into after its last track, if any.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NextSectionDisplay))]
+    private int? _nextSectionId;
+
+    /// <summary>Display name of the linked next playlist; set by the owning view model.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NextSectionDisplay))]
+    private string? _nextSectionName;
+
+    public ObservableCollection<TrackViewModel> Tracks { get; }
+
+    public string TransitionDisplay => TransitionMode switch
+    {
+        TransitionMode.ContinuousMix => "Continuous Mix",
+        TransitionMode.StopAfterTrack => "Stop After Track",
+        TransitionMode.AutoAdvance => "Auto Advance",
+        _ => TransitionMode.ToString()
+    };
+
+    /// <summary>Short badge announcing whether this playlist loops.</summary>
+    public string LoopDisplay => IsLooping ? "Loop: On" : "Loop: Off";
+
+    /// <summary>Short badge announcing the chained next playlist, if any.</summary>
+    public string NextSectionDisplay =>
+        NextSectionId is null ? "Next: —" : $"Next: {NextSectionName ?? "(linked)"}";
+
+    /// <summary>Accessible group label announcing the bucket and its track count.</summary>
+    public string AccessibleName =>
+        $"{Name} segment, {Tracks.Count} tracks, transition {TransitionDisplay}, {LoopDisplay}, {NextSectionDisplay}";
+
+    /// <summary>
+    /// Show the playlist name in item controls that fall back to <see cref="object.ToString"/>
+    /// (e.g. a ComboBox without a DisplayMemberPath/ItemTemplate). Without this the
+    /// "linked playlist" dropdown displays the type name instead of the segment name.
+    /// </summary>
+    public override string ToString() => Name;
+}

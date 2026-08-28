@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="WeddingAudioEngine.Tests/WeddingAudioEngine.Tests.csproj" />
+  <Project Path="WeddingAudioEngine/WeddingAudioEngine.csproj" />
+  <Project Path="WeddingMusicData.Tests/WeddingMusicData.Tests.csproj" />
+  <Project Path="WeddingMusicData/WeddingMusicData.csproj" />
+  <Project Path="WeddingMusicPlannerPro.Wpf/WeddingMusicPlannerPro.Wpf.csproj" />
+  <Project Path="WeddingMusicPlannerPro/WeddingMusicPlannerPro.fsproj" />
+  <Project Path="WeddingMusicSearch/WeddingMusicSearch.csproj" />
+</Solution>

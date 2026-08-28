@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="WeddingMusicPlannerPro">
+    <resource name="FSharpSignatureData.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpSignatureCompressedData.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpSignatureDataB.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpSignatureCompressedDataB.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpOptimizationData.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpOptimizationCompressedData.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpOptimizationDataB.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpOptimizationCompressedDataB.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpOptimizationInfo.WeddingMusicPlannerPro" action="remove"></resource>
+    <resource name="FSharpSignatureInfo.WeddingMusicPlannerPro" action="remove"></resource>
+  </assembly>
+</linker>

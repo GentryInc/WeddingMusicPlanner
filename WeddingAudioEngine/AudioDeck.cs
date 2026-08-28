@@ -231,11 +231,7 @@ public sealed class AudioDeck : IDisposable
 
             // Rebuild at the new T-in. Suppress the intro fade-in on reposition so the
             // operator hears an immediate cut-in rather than a fade every time they seek.
-            // Tear down the current pipeline and leave the deck in a non-playing state so
-            // the Load below is valid (Load rejects reloads while Playing/Fading).
             _player?.Stop();
-            ReleasePipeline_NoLock();
-            TransitionTo(DeckState.Stopped);
             Load(path, position, _loadedTOut,
                  TimeSpan.Zero, _loadedFadeOut,
                  _loadedFadeInShape, _loadedFadeOutShape);

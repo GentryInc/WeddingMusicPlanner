@@ -1,7 +1,16 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\source\\repos\\weddingmusicplanner\\weddingmusicplannerpro.wpf\\behaviors\\trackdragdrop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\behaviors\\trackdragdrop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|c:\\users\\corwy\\source\\repos\\weddingmusicplanner\\weddingaudioengine\\audiodeck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|solutionrelative:weddingaudioengine\\audiodeck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -18,6 +27,32 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AudioDeck.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\AudioDeck.cs",
+              "RelativeDocumentMoniker": "WeddingAudioEngine\\AudioDeck.cs",
+              "ToolTip": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\AudioDeck.cs",
+              "RelativeToolTip": "WeddingAudioEngine\\AudioDeck.cs",
+              "ViewState": "AgIAAOkAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-28T08:03:23.445Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "TrackDragDrop.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\Behaviors\\TrackDragDrop.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Behaviors\\TrackDragDrop.cs",
+              "ToolTip": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\Behaviors\\TrackDragDrop.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Behaviors\\TrackDragDrop.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-28T07:58:58.573Z",
+              "EditorCaption": ""
             }
           ]
         }

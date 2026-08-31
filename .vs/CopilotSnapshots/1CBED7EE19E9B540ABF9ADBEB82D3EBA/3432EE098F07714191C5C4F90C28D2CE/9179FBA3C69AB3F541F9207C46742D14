@@ -1,0 +1,340 @@
+﻿using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+
+namespace WeddingAudioEngine;
+
+/// <summary>
+/// A single playback deck with a strict state machine:
+/// Idle → Loaded → Playing ⇄ Paused, Playing → Fading → Stopped → (Loaded | Disposed).
+/// All transitions are validated; illegal transitions throw <see cref="InvalidOperationException"/>.
+/// </summary>
+public sealed class AudioDeck : IDisposable
+{
+    private readonly IWavePlayerFactory _playerFactory;
+    private readonly IAudioSourceFactory _sourceFactory;
+    private readonly object _gate = new();
+
+    private IWavePlayer? _player;
+    private IAudioSource? _source;
+    private ScheduledFadeSampleProvider? _envelope;
+    private EqualizerSampleProvider? _eq;
+    private VolumeSampleProvider? _volume;
+    private TimeSpan _tIn;
+
+    // Retained EQ band gains (dB) so they persist across Load/Seek pipeline rebuilds.
+    private float _eqLowDb, _eqMidDb, _eqHighDb;
+
+    // Original load parameters, retained so Seek can rebuild the pipeline at a new
+    // T-in without the caller having to re-specify cue points and fade shapes.
+    private TimeSpan _loadedTOut;
+    private TimeSpan? _loadedFadeIn;
+    private TimeSpan? _loadedFadeOut;
+    private FadeShape _loadedFadeInShape;
+    private FadeShape _loadedFadeOutShape;
+
+    private float _volumeLevel = 1f;
+
+    public DeckRole Role { get; }
+    public DeckState State { get; private set; } = DeckState.Idle;
+    public string? CurrentTrackPath { get; private set; }
+
+    /// <summary>
+    /// Master output level for this deck, 0.0 (silent) .. 1.0 (unity). Applied on top
+    /// of the fade envelope, so operator volume and scheduled fades compose correctly.
+    /// Safe to set from the UI thread at any time.
+    /// </summary>
+    public float Volume
+    {
+        get => _volumeLevel;
+        set
+        {
+            _volumeLevel = Math.Clamp(value, 0f, 1f);
+            var v = _volume;
+            if (v is not null) v.Volume = _volumeLevel;
+        }
+    }
+
+    /// <summary>Low-shelf EQ gain (dB), retained across pipeline rebuilds. Range ±12 dB.</summary>
+    public float EqLowDb
+    {
+        get => _eqLowDb;
+        set { _eqLowDb = value; var e = _eq; if (e is not null) _eqLowDb = e.LowGainDb = value; }
+    }
+
+    /// <summary>Mid peaking EQ gain (dB), retained across pipeline rebuilds. Range ±12 dB.</summary>
+    public float EqMidDb
+    {
+        get => _eqMidDb;
+        set { _eqMidDb = value; var e = _eq; if (e is not null) _eqMidDb = e.MidGainDb = value; }
+    }
+
+    /// <summary>High-shelf EQ gain (dB), retained across pipeline rebuilds. Range ±12 dB.</summary>
+    public float EqHighDb
+    {
+        get => _eqHighDb;
+        set { _eqHighDb = value; var e = _eq; if (e is not null) _eqHighDb = e.HighGainDb = value; }
+    }
+
+    /// <summary>
+    /// Current playhead position within the track (T-in offset plus elapsed audio),
+    /// or <see cref="TimeSpan.Zero"/> when nothing is loaded. Read-only: derived from
+    /// the envelope's delivered-frame counter, safe to poll from a UI timer.
+    /// </summary>
+    public TimeSpan Position
+    {
+        get
+        {
+            var env = _envelope;
+            return env is null ? TimeSpan.Zero : _tIn + env.Elapsed;
+        }
+    }
+
+    /// <summary>Total playable duration of the loaded track, or zero when idle.</summary>
+    public TimeSpan Duration => _source?.TotalTime ?? TimeSpan.Zero;
+
+    /// <summary>Raised when a track finishes (reached T-out) or an emergency fade completes.</summary>
+    public event EventHandler? TrackCompleted;
+
+    public event EventHandler<DeckState>? StateChanged;
+
+    public AudioDeck(DeckRole role, IWavePlayerFactory playerFactory, IAudioSourceFactory sourceFactory)
+    {
+        Role = role;
+        _playerFactory = playerFactory;
+        _sourceFactory = sourceFactory;
+    }
+
+    /// <summary>
+    /// Loads a track and prepares the envelope: playback starts at <paramref name="tIn"/>
+    /// and fades to silence completing at <paramref name="tOut"/>.
+    /// </summary>
+    public void Load(string path, TimeSpan tIn, TimeSpan tOut,
+                     TimeSpan? fadeIn = null, TimeSpan? fadeOut = null,
+                     FadeShape fadeInShape = FadeShape.Linear,
+                     FadeShape fadeOutShape = FadeShape.Linear)
+    {
+        lock (_gate)
+        {
+            EnsureNotDisposed();
+            if (State is DeckState.Playing or DeckState.Fading)
+                throw new InvalidOperationException($"Cannot load while {State}; stop the deck first.");
+
+            ReleasePipeline_NoLock();
+
+            _source = _sourceFactory.Open(path);
+            if (tOut > _source.TotalTime) tOut = _source.TotalTime;
+            if (tIn >= tOut)
+                throw new InvalidOperationException(
+                    $"Cue window [{tIn}\u2013{tOut}] is invalid for this source (length {_source.TotalTime}).");
+
+            // Intro skip (T-in): sample-accurate offset.
+            ISampleProvider positioned = tIn > TimeSpan.Zero
+                ? new OffsetSampleProvider(_source.SampleProvider) { SkipOver = tIn }
+                : _source.SampleProvider;
+
+            _envelope = new ScheduledFadeSampleProvider(
+                positioned, tIn, tOut,
+                fadeIn ?? TimeSpan.Zero,
+                fadeOut ?? TimeSpan.FromSeconds(2),
+                fadeInShape,
+                fadeOutShape);
+            _envelope.PlaybackReachedEnd += OnPlaybackReachedEnd;
+
+            // Signal chain after the fade envelope: EQ shapes tone, then operator volume
+            // sets level. Order matters — EQ before volume keeps the fader purely a gain
+            // trim regardless of tone settings. Both seeded from retained state so Load/Seek
+            // rebuilds preserve the operator's adjustments.
+            _eq = new EqualizerSampleProvider(_envelope)
+            {
+                LowGainDb = _eqLowDb,
+                MidGainDb = _eqMidDb,
+                HighGainDb = _eqHighDb
+            };
+            _volume = new VolumeSampleProvider(_eq) { Volume = _volumeLevel };
+            _tIn = tIn;
+
+            _loadedTOut = tOut;
+            _loadedFadeIn = fadeIn;
+            _loadedFadeOut = fadeOut;
+            _loadedFadeInShape = fadeInShape;
+            _loadedFadeOutShape = fadeOutShape;
+
+            _player = _playerFactory.Create(Role);
+            _player.Init(_volume);
+
+            CurrentTrackPath = path;
+            TransitionTo(DeckState.Loaded);
+        }
+    }
+
+    public void Play()
+    {
+        lock (_gate)
+        {
+            EnsureNotDisposed();
+            if (State is not (DeckState.Loaded or DeckState.Paused))
+                throw new InvalidOperationException($"Cannot play from state {State}.");
+            _player!.Play();
+            TransitionTo(DeckState.Playing);
+        }
+    }
+
+    public void Pause()
+    {
+        lock (_gate)
+        {
+            EnsureNotDisposed();
+            if (State != DeckState.Playing)
+                throw new InvalidOperationException($"Cannot pause from state {State}.");
+            _player!.Pause();
+            TransitionTo(DeckState.Paused);
+        }
+    }
+
+    public void Stop()
+    {
+        lock (_gate)
+        {
+            EnsureNotDisposed();
+            if (State is DeckState.Idle or DeckState.Stopped) return;
+            _player?.Stop();
+            ReleasePipeline_NoLock();
+            TransitionTo(DeckState.Stopped);
+        }
+    }
+
+    /// <summary>
+    /// Repositions the playhead to <paramref name="position"/> (an absolute offset from
+    /// the start of the track). Implemented by rebuilding the pipeline at a new T-in via
+    /// the well-tested <see cref="Load"/> path, preserving the original T-out and fade
+    /// settings, then restoring the prior play/pause state. Not valid mid-fade.
+    /// </summary>
+    public void Seek(TimeSpan position)
+    {
+        lock (_gate)
+        {
+            EnsureNotDisposed();
+            if (State is DeckState.Idle or DeckState.Stopped)
+                throw new InvalidOperationException($"Cannot seek from state {State}; load a track first.");
+            if (State is DeckState.Fading)
+                throw new InvalidOperationException("Cannot seek while fading.");
+            if (CurrentTrackPath is not { } path)
+                throw new InvalidOperationException("No track is loaded to seek within.");
+
+            // Clamp into the playable window [0, T-out); keep a small guard before T-out
+            // so the envelope always has a valid (T-out > T-in) range to schedule.
+            var minGuard = TimeSpan.FromMilliseconds(10);
+            if (position < TimeSpan.Zero) position = TimeSpan.Zero;
+            if (position > _loadedTOut - minGuard) position = _loadedTOut - minGuard;
+
+            bool wasPlaying = State is DeckState.Playing;
+
+            // Rebuild at the new T-in. Suppress the intro fade-in on reposition so the
+            // operator hears an immediate cut-in rather than a fade every time they seek.
+            _player?.Stop();
+            Load(path, position, _loadedTOut,
+                 TimeSpan.Zero, _loadedFadeOut,
+                 _loadedFadeInShape, _loadedFadeOutShape);
+
+            if (wasPlaying) Play();
+        }
+    }
+
+    /// <summary>
+    /// Emergency Fade &amp; Advance: triggers a fade-out (default 3 s), waits for it to
+    /// complete, then safely stops and disposes the active stream. Never throws on
+    /// the hot path; safe to invoke from a UI panic button.
+    /// </summary>
+    public async Task EmergencyFadeAndAdvanceAsync(TimeSpan? fadeDuration = null, CancellationToken ct = default)
+    {
+        ScheduledFadeSampleProvider? envelope;
+        TimeSpan duration = fadeDuration ?? TimeSpan.FromSeconds(3);
+
+        lock (_gate)
+        {
+            EnsureNotDisposed();
+            if (State != DeckState.Playing) return;   // nothing audible to kill
+            envelope = _envelope;
+            TransitionTo(DeckState.Fading);
+        }
+
+        envelope?.BeginManualFadeOut(duration);
+
+        // Wait out the fade (+ small buffer for the device to drain), off the UI thread.
+        try
+        {
+            await Task.Delay(duration + TimeSpan.FromMilliseconds(150), ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled: cut immediately rather than leave the deck in limbo.
+        }
+
+        lock (_gate)
+        {
+            if (State == DeckState.Disposed) return;
+            _player?.Stop();
+            ReleasePipeline_NoLock();
+            TransitionTo(DeckState.Stopped);
+        }
+
+        TrackCompleted?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnPlaybackReachedEnd(object? sender, EventArgs e)
+    {
+        // Audio-thread callback: schedule teardown on the thread pool, never block the render thread.
+        Task.Run(() =>
+        {
+            lock (_gate)
+            {
+                if (State is DeckState.Disposed or DeckState.Stopped) return;
+                _player?.Stop();
+                ReleasePipeline_NoLock();
+                TransitionTo(DeckState.Stopped);
+            }
+            TrackCompleted?.Invoke(this, EventArgs.Empty);
+        });
+    }
+
+    /// <summary>Deterministically releases the player, envelope and file reader.</summary>
+    private void ReleasePipeline_NoLock()
+    {
+        if (_envelope is not null)
+            _envelope.PlaybackReachedEnd -= OnPlaybackReachedEnd;
+        _envelope = null;
+        _volume = null;
+        _eq = null;
+
+        _player?.Dispose();
+        _player = null;
+
+        _source?.Dispose();
+        _source = null;
+
+        CurrentTrackPath = null;
+    }
+
+    private void TransitionTo(DeckState next)
+    {
+        State = next;
+        StateChanged?.Invoke(this, next);
+    }
+
+    private void EnsureNotDisposed()
+    {
+        if (State == DeckState.Disposed)
+            throw new ObjectDisposedException(nameof(AudioDeck));
+    }
+
+    public void Dispose()
+    {
+        lock (_gate)
+        {
+            if (State == DeckState.Disposed) return;
+            _player?.Stop();
+            ReleasePipeline_NoLock();
+            TransitionTo(DeckState.Disposed);
+        }
+    }
+}

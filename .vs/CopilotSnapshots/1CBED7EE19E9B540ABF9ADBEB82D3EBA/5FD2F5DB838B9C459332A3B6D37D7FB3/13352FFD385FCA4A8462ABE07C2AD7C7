@@ -1,0 +1,163 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using System.Linq;
+
+namespace WeddingMusicData;
+
+/// <summary>
+/// Applies EF Core migrations and, when necessary, "baselines" a legacy database
+/// that was originally created with <c>EnsureCreated()</c> (and therefore has the
+/// application tables but no <c>__EFMigrationsHistory</c> table).
+///
+/// This makes the switch from <c>EnsureCreated</c> to Migrations safe for existing
+/// users: their data is preserved, the migration history is stamped so EF does not
+/// try to re-<c>CREATE</c> existing tables, and any columns that were added to the
+/// model after the legacy database was created are patched in idempotently.
+/// </summary>
+public static class DatabaseInitializer
+{
+    public static async Task InitializeAsync(WeddingMusicContext db, CancellationToken ct = default)
+    {
+        var creator = db.GetService<Microsoft.EntityFrameworkCore.Storage.IRelationalDatabaseCreator>();
+        var dbExists = await creator.ExistsAsync(ct).ConfigureAwait(false);
+
+        if (dbExists && !await HistoryTableExistsAsync(db, ct).ConfigureAwait(false)
+                     && await TableExistsAsync(db, "Tracks", ct).ConfigureAwait(false))
+        {
+            // Legacy database created by EnsureCreated(): adopt it into the migrations
+            // system instead of recreating it.
+            await BaselineLegacyDatabaseAsync(db, ct).ConfigureAwait(false);
+            await PatchLegacyTracksSchemaAsync(db, ct).ConfigureAwait(false);
+        }
+
+        // Fresh DB -> creates everything. Baselined/partial DB -> applies anything pending.
+        await db.Database.MigrateAsync(ct).ConfigureAwait(false);
+
+        // Defensive safeguard: reconcile columns that can go missing if a migration
+        // fails to be discovered by EF (e.g. a migration committed without its
+        // generated *.Designer.cs, which carries the [Migration] attribute). This is
+        // idempotent and runs for every database (fresh, migrated or legacy).
+        await ReconcileModelDriftAsync(db, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Idempotently patches columns that the current model expects but that may be
+    /// absent because their migration was not applied. Safe to run on every startup.
+    /// </summary>
+    private static async Task ReconcileModelDriftAsync(WeddingMusicContext db, CancellationToken ct)
+    {
+        await AddColumnIfMissingAsync(db, "Tracks", "MusicalKey", "TEXT", ct).ConfigureAwait(false);
+
+        // AddPlaylistChainAndLoop columns. These can go missing if that migration is
+        // not discovered by EF (e.g. its *.Designer.cs — which carries the [Migration]
+        // attribute — is absent), in which case MigrateAsync silently skips it. Patch
+        // them idempotently so a query selecting p.IsLooping never fails.
+        await AddColumnIfMissingAsync(db, "PlaylistSections", "IsLooping", "INTEGER NOT NULL DEFAULT 0", ct).ConfigureAwait(false);
+        await AddColumnIfMissingAsync(db, "PlaylistSections", "NextSectionId", "INTEGER", ct).ConfigureAwait(false);
+
+        // Guest song requests (LAN request page). Created idempotently because this
+        // table was introduced without a generated migration.
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS \"SongRequests\" (" +
+            "\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_SongRequests\" PRIMARY KEY AUTOINCREMENT, " +
+            "\"TrackId\" INTEGER NOT NULL, " +
+            "\"GuestName\" TEXT NULL, " +
+            "\"Status\" INTEGER NOT NULL DEFAULT 0, " +
+            "\"RequestedUtc\" TEXT NOT NULL, " +
+            "\"ResolvedUtc\" TEXT NULL, " +
+            "CONSTRAINT \"FK_SongRequests_Tracks_TrackId\" FOREIGN KEY (\"TrackId\") " +
+            "REFERENCES \"Tracks\" (\"Id\") ON DELETE CASCADE);", ct).ConfigureAwait(false);
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS \"IX_SongRequests_Status_RequestedUtc\" " +
+            "ON \"SongRequests\" (\"Status\", \"RequestedUtc\");", ct).ConfigureAwait(false);
+    }
+
+    private static async Task BaselineLegacyDatabaseAsync(WeddingMusicContext db, CancellationToken ct)
+    {
+        // Create the history table and stamp ONLY the initial migration as applied.
+        // MigrateAsync() will then apply every later migration normally, so new
+        // schema changes reach legacy databases automatically without hand-patching.
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\" (" +
+            "\"MigrationId\" TEXT NOT NULL CONSTRAINT \"PK___EFMigrationsHistory\" PRIMARY KEY, " +
+            "\"ProductVersion\" TEXT NOT NULL);", ct).ConfigureAwait(false);
+
+        var migrationsAssembly = db.GetService<IMigrationsAssembly>();
+        var initialMigrationId = migrationsAssembly.Migrations.Keys.FirstOrDefault();
+        if (initialMigrationId is null)
+            return;
+
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT OR IGNORE INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") " +
+            "VALUES ({0}, {1});",
+            new object[] { initialMigrationId, "8.0.10" }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Adds columns that the initial migration expects but were missing from the
+    /// legacy EnsureCreated schema. This is the exact drift behind
+    /// "SQLite Error 1: 'no such column: t.CachedFilePath'". Columns introduced by
+    /// *later* migrations are applied by MigrateAsync and must not be patched here.
+    /// </summary>
+    private static async Task PatchLegacyTracksSchemaAsync(WeddingMusicContext db, CancellationToken ct)
+    {
+        await AddColumnIfMissingAsync(db, "Tracks", "CachedFilePath", "TEXT", ct).ConfigureAwait(false);
+        await AddColumnIfMissingAsync(db, "Tracks", "CachedUtc", "TEXT", ct).ConfigureAwait(false);
+        await AddColumnIfMissingAsync(db, "Tracks", "IsCachedOffline", "INTEGER NOT NULL DEFAULT 0", ct).ConfigureAwait(false);
+    }
+
+    private static async Task<bool> HistoryTableExistsAsync(WeddingMusicContext db, CancellationToken ct)
+        => await TableExistsAsync(db, "__EFMigrationsHistory", ct).ConfigureAwait(false);
+
+    private static async Task<bool> TableExistsAsync(WeddingMusicContext db, string table, CancellationToken ct)
+    {
+        var conn = db.Database.GetDbConnection();
+        await OpenIfNeededAsync(conn, ct).ConfigureAwait(false);
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name;";
+        var p = cmd.CreateParameter();
+        p.ParameterName = "$name";
+        p.Value = table;
+        cmd.Parameters.Add(p);
+        var result = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return Convert.ToInt64(result) > 0;
+    }
+
+    private static async Task AddColumnIfMissingAsync(
+        WeddingMusicContext db, string table, string column, string columnDef, CancellationToken ct)
+    {
+        var conn = db.Database.GetDbConnection();
+        await OpenIfNeededAsync(conn, ct).ConfigureAwait(false);
+
+        bool exists;
+        await using (var check = conn.CreateCommand())
+        {
+            // PRAGMA does not accept parameters for the table name; the value is internal/constant.
+            check.CommandText = $"PRAGMA table_info(\"{table}\");";
+            await using var reader = await check.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            exists = false;
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                // Column 1 ("name") holds the column name.
+                if (string.Equals(reader.GetString(1), column, StringComparison.OrdinalIgnoreCase))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+        }
+
+        if (!exists)
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                $"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {columnDef};", ct).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task OpenIfNeededAsync(System.Data.Common.DbConnection conn, CancellationToken ct)
+    {
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync(ct).ConfigureAwait(false);
+    }
+}

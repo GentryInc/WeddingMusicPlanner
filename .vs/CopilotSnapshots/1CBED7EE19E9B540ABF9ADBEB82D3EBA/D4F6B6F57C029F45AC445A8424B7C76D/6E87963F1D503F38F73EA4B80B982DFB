@@ -1,0 +1,579 @@
+﻿using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using WeddingMusicSearch.Abstractions;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Embedded Kestrel server hosting the guest song-request page on the venue LAN.
+/// Guests scan a QR code pointing at <see cref="RequestUrl"/>, search the DJ's
+/// local library, and submit a request that lands in the Requests panel.
+/// </summary>
+public interface IRequestWebServer
+{
+    /// <summary>The LAN URL guests open, e.g. http://192.168.1.10:8420/.</summary>
+    string RequestUrl { get; }
+
+    /// <summary>True once Kestrel is accepting connections.</summary>
+    bool IsRunning { get; }
+
+    /// <summary>Raised when the bride submits a valid VIP skip-to-next-song request.</summary>
+    event EventHandler? SkipRequested;
+}
+
+public sealed class RequestWebServer : BackgroundService, IRequestWebServer
+{
+    public const int Port = 8420;
+
+    private readonly ISongRequestService _requests;
+    private readonly ISettingsService _settings;
+    private readonly ITipPaymentService _tips;
+    private WebApplication? _app;
+
+    // paymentId -> queued request payload awaiting payment confirmation.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (RequestDto Dto, bool IsPriority)> _awaitingPayment = new();
+
+    public RequestWebServer(ISongRequestService requests, ISettingsService settings, ITipPaymentService tips)
+    {
+        _requests = requests;
+        _settings = settings;
+        _tips = tips;
+    }
+
+    public bool IsRunning { get; private set; }
+
+    public event EventHandler? SkipRequested;
+
+    public string RequestUrl => $"http://{GetLanIPv4()}:{Port}/";
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseUrls($"http://*:{Port}");
+        _app = builder.Build();
+
+        _app.MapGet("/", () => Results.Content(RequestPageHtml, "text/html"));
+
+        _app.MapGet("/api/search", async (string? q, CancellationToken ct) =>
+        {
+            var hits = await _requests.SearchAsync(q ?? string.Empty, 20, ct).ConfigureAwait(false);
+            return Results.Json(hits.Select(h => new HitDto(
+                h.Source.ToString(),
+                h.ExternalId,
+                h.Title,
+                h.Artist ?? "Unknown Artist",
+                h.Album,
+                h.Uri,
+                h.DurationMs,
+                h.DurationMs is { } ms and > 0
+                    ? TimeSpan.FromMilliseconds(ms).ToString(@"m\:ss")
+                    : string.Empty)));
+        });
+
+        _app.MapPost("/api/request", async (RequestDto dto, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(dto.Title) ||
+                !Enum.TryParse<SearchSource>(dto.Source, ignoreCase: true, out var source) ||
+                source is not (SearchSource.Spotify or SearchSource.YouTube))
+            {
+                return Results.BadRequest();
+            }
+
+            var hit = new SearchResult
+            {
+                Source = source,
+                ExternalId = dto.ExternalId,
+                Title = dto.Title,
+                Artist = dto.Artist,
+                Album = dto.Album,
+                Uri = dto.Uri,
+                DurationMs = dto.DurationMs
+            };
+
+            // VIP password: matching -> priority + auto-approval; wrong (non-empty)
+            // -> 401 so the bride knows her password didn't take; empty -> normal.
+            bool isPriority = false;
+            if (!string.IsNullOrWhiteSpace(dto.VipPassword))
+            {
+                var expected = _settings.BridePassword;
+                if (string.IsNullOrWhiteSpace(expected) ||
+                    !string.Equals(dto.VipPassword.Trim(), expected.Trim(), StringComparison.Ordinal))
+                {
+                    return Results.Unauthorized();
+                }
+                isPriority = true;
+            }
+
+            bool ok = await _requests.CreateRequestAsync(hit, dto.GuestName, isPriority, ct: ct).ConfigureAwait(false);
+            return ok ? Results.Ok() : Results.NotFound();
+        });
+
+        // VIP-only: skip to the next song in the playlist. Requires the bride password.
+        _app.MapPost("/api/skip", (SkipDto dto) =>
+        {
+            var expected = _settings.BridePassword;
+            if (string.IsNullOrWhiteSpace(dto.VipPassword) ||
+                string.IsNullOrWhiteSpace(expected) ||
+                !string.Equals(dto.VipPassword.Trim(), expected.Trim(), StringComparison.Ordinal))
+            {
+                return Results.Unauthorized();
+            }
+
+            SkipRequested?.Invoke(this, EventArgs.Empty);
+            return Results.Ok();
+        });
+
+        // Which tip providers are configured (page hides tipping when none, or
+        // when the DJ turned the feature off in Settings).
+        _app.MapGet("/api/tip/providers", () => Results.Json(
+            _settings.EnableTipping ? _tips.Providers : Array.Empty<string>()));
+
+        // Starts a hosted checkout for a tipped request. The request itself is
+        // held in memory until the payment is confirmed on return.
+        _app.MapPost("/api/tip/checkout", async (TipCheckoutDto dto, HttpContext http, CancellationToken ct) =>
+        {
+            if (!_settings.EnableTipping)
+                return Results.BadRequest();
+
+            if (dto.Request is null || string.IsNullOrWhiteSpace(dto.Request.Title) ||
+                !Enum.TryParse<SearchSource>(dto.Request.Source, ignoreCase: true, out var source) ||
+                source is not (SearchSource.Spotify or SearchSource.YouTube))
+            {
+                return Results.BadRequest();
+            }
+
+            bool isPriority = false;
+            if (!string.IsNullOrWhiteSpace(dto.Request.VipPassword))
+            {
+                var expected = _settings.BridePassword;
+                if (!string.IsNullOrWhiteSpace(expected) &&
+                    string.Equals(dto.Request.VipPassword.Trim(), expected.Trim(), StringComparison.Ordinal))
+                {
+                    isPriority = true;
+                }
+            }
+
+            // The return URL must be reachable from the guest's phone: reuse the
+            // host they are already connected through.
+            var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}";
+            var paymentId = Guid.NewGuid().ToString("N");
+            var returnUrl = $"{baseUrl}/tip/return?pid={paymentId}";
+
+            var checkoutUrl = await _tips.CreateCheckoutAsync(dto.Provider ?? "stripe", dto.AmountCents, returnUrl, paymentId, ct)
+                .ConfigureAwait(false);
+            if (checkoutUrl is null)
+                return Results.Problem("Could not start the payment. Try again or skip the tip.");
+
+            _awaitingPayment[paymentId] = (dto.Request, isPriority);
+            return Results.Json(new { checkoutUrl, paymentId });
+        });
+
+        // Guest returns here from Stripe/PayPal. Verify, then create the request.
+        _app.MapGet("/tip/return", async (string? pid, string? paid, CancellationToken ct) =>
+        {
+            if (pid is null || paid != "1" || !_awaitingPayment.TryGetValue(pid, out var held))
+                return Results.Content(TipResultHtml(false, "Payment was cancelled. Your song was not requested."), "text/html");
+
+            var amount = await _tips.VerifyPaymentAsync(pid, ct).ConfigureAwait(false);
+            if (amount is null)
+                return Results.Content(TipResultHtml(false, "Payment not confirmed yet. If you completed it, refresh this page."), "text/html");
+
+            _awaitingPayment.TryRemove(pid, out _);
+            var hit = ToSearchResult(held.Dto)!;
+            await _requests.CreateRequestAsync(hit, held.Dto.GuestName, held.IsPriority, amount.Value, ct).ConfigureAwait(false);
+            var dollars = (amount.Value / 100m).ToString("0.00");
+            return Results.Content(TipResultHtml(true, $"Thank you for the ${dollars} tip! Your song jumped the queue."), "text/html");
+        });
+
+        // Page JS polls this after opening checkout in a new tab, so the request
+        // completes even if the guest never navigates the checkout tab back.
+        _app.MapGet("/api/tip/status", async (string? pid, CancellationToken ct) =>
+        {
+            if (pid is null || !_awaitingPayment.TryGetValue(pid, out var held))
+                return Results.Json(new { state = "unknown" });
+
+            var amount = await _tips.VerifyPaymentAsync(pid, ct).ConfigureAwait(false);
+            if (amount is null)
+                return Results.Json(new { state = "pending" });
+
+            _awaitingPayment.TryRemove(pid, out _);
+            var hit = ToSearchResult(held.Dto)!;
+            await _requests.CreateRequestAsync(hit, held.Dto.GuestName, held.IsPriority, amount.Value, ct).ConfigureAwait(false);
+            return Results.Json(new { state = "paid", amountCents = amount.Value });
+        });
+
+        try
+        {
+            await _app.StartAsync(stoppingToken).ConfigureAwait(false);
+            IsRunning = true;
+            await Task.Delay(Timeout.Infinite, stoppingToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown.
+        }
+        catch (Exception)
+        {
+            // Port in use / firewall refusal: the request feature degrades gracefully;
+            // the rest of the app (playback, playlists) must keep working.
+            IsRunning = false;
+        }
+        finally
+        {
+            IsRunning = false;
+            if (_app is not null)
+                await _app.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Best-effort LAN IPv4 so the QR code points at an address guests can reach.</summary>
+    private static string GetLanIPv4()
+    {
+        try
+        {
+            var candidate = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(n => n.OperationalStatus == OperationalStatus.Up
+                            && n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+                .Select(a => a.Address)
+                .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork
+                                     && !IPAddress.IsLoopback(a));
+            return candidate?.ToString() ?? "localhost";
+        }
+        catch
+        {
+            return "localhost";
+        }
+    }
+
+    private sealed record HitDto(
+        string Source, string? ExternalId, string Title, string Artist,
+        string? Album, string? Uri, long? DurationMs, string Duration);
+
+    private sealed record RequestDto(
+        [property: JsonPropertyName("source")] string Source,
+        [property: JsonPropertyName("externalId")] string? ExternalId,
+        [property: JsonPropertyName("title")] string Title,
+        [property: JsonPropertyName("artist")] string? Artist,
+        [property: JsonPropertyName("album")] string? Album,
+        [property: JsonPropertyName("uri")] string? Uri,
+        [property: JsonPropertyName("durationMs")] long? DurationMs,
+        [property: JsonPropertyName("guestName")] string? GuestName,
+        [property: JsonPropertyName("vipPassword")] string? VipPassword);
+
+    private sealed record SkipDto(
+        [property: JsonPropertyName("vipPassword")] string? VipPassword);
+
+    private sealed record TipCheckoutDto(
+        [property: JsonPropertyName("provider")] string? Provider,
+        [property: JsonPropertyName("amountCents")] int AmountCents,
+        [property: JsonPropertyName("request")] RequestDto? Request);
+
+    private static SearchResult? ToSearchResult(RequestDto dto)
+    {
+        if (!Enum.TryParse<SearchSource>(dto.Source, ignoreCase: true, out var source))
+            return null;
+        return new SearchResult
+        {
+            Source = source,
+            ExternalId = dto.ExternalId,
+            Title = dto.Title,
+            Artist = dto.Artist,
+            Album = dto.Album,
+            Uri = dto.Uri,
+            DurationMs = dto.DurationMs
+        };
+    }
+
+    private static string TipResultHtml(bool ok, string message) => $$"""
+        <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"><title>DJ Tip</title>
+        <style>body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#14141c;color:#eee;
+        display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:16px;text-align:center}
+        .card{background:#22222e;border-radius:12px;padding:32px;max-width:400px}
+        h1{font-size:2.2rem;margin:0 0 12px}</style></head><body><div class="card">
+        <h1>{{(ok ? "&#127881;" : "&#128532;")}}</h1><p>{{WebUtility.HtmlEncode(message)}}</p>
+        <p style="color:#888;font-size:.85rem">You can close this tab.</p></div></body></html>
+        """;
+
+    /// <summary>Self-contained mobile-friendly request page (no external assets).</summary>
+    private const string RequestPageHtml = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request a Song</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background:#14141c; color:#eee; margin:0; padding:16px; }
+  h1 { font-size:1.4rem; text-align:center; }
+  input { width:100%; box-sizing:border-box; padding:12px; font-size:1rem; border-radius:8px; border:1px solid #444; background:#22222e; color:#eee; margin-bottom:10px; }
+  .hit { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-bottom:1px solid #2c2c3a; }
+  .hit .meta { flex:1; min-width:0; }
+  .hit .title { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hit .artist { font-size:.85rem; color:#aaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  button { padding:10px 14px; font-size:.95rem; border:none; border-radius:8px; background:#7c5cff; color:white; }
+  button:disabled { background:#3a3a4a; }
+  #status { text-align:center; margin-top:12px; min-height:1.2em; }
+  .ok { color:#7dff9b; } .err { color:#ff8b8b; }
+  #tipOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); align-items:center; justify-content:center; padding:16px; z-index:10; }
+  #tipCard { background:#22222e; border-radius:12px; padding:20px; max-width:360px; width:100%; }
+  #tipCard h2 { margin:0 0 6px; font-size:1.15rem; }
+  #tipCard .sub { color:#aaa; font-size:.85rem; margin-bottom:12px; }
+  .tipAmounts { display:flex; gap:8px; margin-bottom:10px; }
+  .tipAmounts button { flex:1; }
+  .tipAmounts button.sel { outline:2px solid #7dff9b; }
+  .tipActions { display:flex; gap:8px; margin-top:12px; }
+  .tipActions button { flex:1; }
+  .ghost { background:#3a3a4a; }
+</style>
+</head>
+<body>
+  <h1>&#127925; Request a Song</h1>
+  <input id="name" placeholder="Your name (optional)" maxlength="128">
+  <input id="vip" type="password" placeholder="VIP password (optional)" maxlength="64" autocomplete="off">
+  <button id="skip" style="width:100%; margin-bottom:10px; background:#b8478f;">&#9193; VIP: Skip to next song</button>
+  <input id="q" placeholder="Search songs or artists&hellip;" autofocus>
+  <div id="results"></div>
+  <div id="status"></div>
+
+  <div id="tipOverlay">
+    <div id="tipCard">
+      <h2>&#128181; Tip the DJ?</h2>
+      <div class="sub">Tipped requests jump the queue &mdash; the bigger the tip, the higher your song plays!</div>
+      <div class="tipAmounts">
+        <button data-cents="500">$5</button>
+        <button data-cents="1000">$10</button>
+        <button data-cents="2000">$20</button>
+      </div>
+      <input id="tipCustom" type="number" min="1" max="500" step="1" placeholder="Custom amount (USD)">
+      <div id="tipProviders" class="tipAmounts"></div>
+      <div class="tipActions">
+        <button id="tipSkip" class="ghost">No thanks</button>
+        <button id="tipPay">Tip &amp; Request</button>
+      </div>
+    </div>
+  </div>
+<script>
+  const q = document.getElementById('q');
+  const results = document.getElementById('results');
+  const status = document.getElementById('status');
+  let timer = null;
+
+  q.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(search, 300);
+  });
+
+  document.getElementById('skip').addEventListener('click', async () => {
+    const vip = document.getElementById('vip').value.trim();
+    if (!vip) {
+      status.textContent = 'Enter the VIP password to skip songs.';
+      status.className = 'err';
+      return;
+    }
+    try {
+      const res = await fetch('/api/skip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vipPassword: vip })
+      });
+      if (res.ok) {
+        status.textContent = 'Skipping to the next song\u2026';
+        status.className = 'ok';
+      } else if (res.status === 401) {
+        status.textContent = 'Wrong VIP password \u2014 check it and try again.';
+        status.className = 'err';
+      } else { throw new Error(); }
+    } catch {
+      status.textContent = 'Could not send the skip request. Try again.';
+      status.className = 'err';
+    }
+  });
+
+  async function search() {
+    const term = q.value.trim();
+    if (!term) { results.innerHTML = ''; return; }
+    try {
+      const res = await fetch('/api/search?q=' + encodeURIComponent(term));
+      const hits = await res.json();
+      results.innerHTML = '';
+      if (hits.length === 0) {
+        results.innerHTML = '<div class="hit"><div class="meta"><div class="artist">No matches found</div></div></div>';
+        return;
+      }
+      for (const h of hits) {
+        const row = document.createElement('div');
+        row.className = 'hit';
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = h.title;
+        const artist = document.createElement('div');
+        artist.className = 'artist';
+        const dur = h.duration ? ' \u00b7 ' + h.duration : '';
+        const src = h.source && h.source !== 'Local' ? ' \u00b7 ' + h.source : '';
+        artist.textContent = h.artist + dur + src;
+        meta.append(title, artist);
+        const btn = document.createElement('button');
+        btn.textContent = 'Request';
+        btn.onclick = () => sendRequest(h, btn);
+        row.append(meta, btn);
+        results.appendChild(row);
+      }
+    } catch {
+      status.textContent = 'Search failed \u2014 check your connection.';
+      status.className = 'err';
+    }
+  }
+
+  async function sendRequest(hit, btn) {
+    // Offer a tip first when a payment provider is configured.
+    if (tipProviders === null) {
+      try { tipProviders = await (await fetch('/api/tip/providers')).json(); }
+      catch { tipProviders = []; }
+    }
+    if (tipProviders.length > 0) {
+      openTipDialog(hit, btn);
+      return;
+    }
+    await submitPlainRequest(hit, btn);
+  }
+
+  let tipProviders = null;
+  let tipCtx = null;
+  let tipCents = 500;
+  let tipProvider = null;
+
+  function openTipDialog(hit, btn) {
+    tipCtx = { hit, btn };
+    tipCents = 500;
+    document.querySelectorAll('.tipAmounts button[data-cents]').forEach((b, i) => b.className = i === 0 ? 'sel' : '');
+    document.getElementById('tipCustom').value = '';
+    const provBox = document.getElementById('tipProviders');
+    provBox.innerHTML = '';
+    tipProvider = tipProviders[0];
+    for (const p of tipProviders) {
+      const b = document.createElement('button');
+      b.textContent = p === 'stripe' ? 'Card (Stripe)' : 'PayPal';
+      b.className = p === tipProvider ? 'sel' : '';
+      b.onclick = () => { tipProvider = p; provBox.querySelectorAll('button').forEach(x => x.className = ''); b.className = 'sel'; };
+      provBox.appendChild(b);
+    }
+    document.getElementById('tipOverlay').style.display = 'flex';
+  }
+
+  document.querySelectorAll('.tipAmounts button[data-cents]').forEach(b => {
+    b.onclick = () => {
+      tipCents = parseInt(b.dataset.cents, 10);
+      document.getElementById('tipCustom').value = '';
+      document.querySelectorAll('.tipAmounts button[data-cents]').forEach(x => x.className = '');
+      b.className = 'sel';
+    };
+  });
+
+  document.getElementById('tipSkip').onclick = async () => {
+    document.getElementById('tipOverlay').style.display = 'none';
+    if (tipCtx) await submitPlainRequest(tipCtx.hit, tipCtx.btn);
+    tipCtx = null;
+  };
+
+  document.getElementById('tipPay').onclick = async () => {
+    if (!tipCtx) return;
+    const custom = parseFloat(document.getElementById('tipCustom').value);
+    const cents = !isNaN(custom) && custom >= 1 ? Math.round(custom * 100) : tipCents;
+    document.getElementById('tipOverlay').style.display = 'none';
+    const { hit, btn } = tipCtx; tipCtx = null;
+    btn.disabled = true;
+    status.textContent = 'Opening secure payment\u2026';
+    status.className = '';
+    try {
+      const res = await fetch('/api/tip/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: tipProvider, amountCents: cents, request: buildRequestBody(hit) })
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      window.open(data.checkoutUrl, '_blank');
+      status.textContent = 'Complete the payment in the new tab \u2014 waiting for confirmation\u2026';
+      pollPayment(data.paymentId, btn);
+    } catch {
+      btn.disabled = false;
+      status.textContent = 'Could not start the payment. Try again or request without a tip.';
+      status.className = 'err';
+    }
+  };
+
+  function pollPayment(pid, btn) {
+    let tries = 0;
+    const iv = setInterval(async () => {
+      if (++tries > 60) { clearInterval(iv); btn.disabled = false; return; } // ~5 min
+      try {
+        const s = await (await fetch('/api/tip/status?pid=' + pid)).json();
+        if (s.state === 'paid') {
+          clearInterval(iv);
+          btn.textContent = 'Requested \u2713';
+          status.textContent = 'Tip received \u2014 your song jumped the queue. Thank you!';
+          status.className = 'ok';
+        } else if (s.state === 'unknown') {
+          clearInterval(iv);
+          btn.disabled = false;
+        }
+      } catch { /* keep polling */ }
+    }, 5000);
+  }
+
+  function buildRequestBody(hit) {
+    return {
+      source: hit.source,
+      externalId: hit.externalId,
+      title: hit.title,
+      artist: hit.artist,
+      album: hit.album,
+      uri: hit.uri,
+      durationMs: hit.durationMs,
+      guestName: document.getElementById('name').value,
+      vipPassword: document.getElementById('vip').value
+    };
+  }
+
+  async function submitPlainRequest(hit, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildRequestBody(hit))
+      });
+      if (res.ok) {
+        const vip = document.getElementById('vip').value.trim() !== '';
+        btn.textContent = 'Requested \u2713';
+        status.textContent = vip
+          ? 'VIP request sent \u2014 it will be added automatically!'
+          : 'Request sent to the DJ!';
+        status.className = 'ok';
+      } else if (res.status === 401) {
+        btn.disabled = false;
+        status.textContent = 'Wrong VIP password \u2014 check it and try again.';
+        status.className = 'err';
+      } else { throw new Error(); }
+    } catch {
+      btn.disabled = false;
+      status.textContent = 'Could not send the request. Try again.';
+      status.className = 'err';
+    }
+  }
+</script>
+</body>
+</html>
+""";
+}

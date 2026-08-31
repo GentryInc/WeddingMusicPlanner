@@ -95,6 +95,12 @@ public sealed class AudioDeck : IDisposable
     /// <summary>Raised when a track finishes (reached T-out) or an emergency fade completes.</summary>
     public event EventHandler? TrackCompleted;
 
+    /// <summary>
+    /// Raised ~20x/second while audio flows with the peak sample level (0..1) of the
+    /// latest block, after fades/EQ/volume. Fired on the audio render thread.
+    /// </summary>
+    public event EventHandler<float>? LevelMeasured;
+
     public event EventHandler<DeckState>? StateChanged;
 
     public AudioDeck(DeckRole role, IWavePlayerFactory playerFactory, IAudioSourceFactory sourceFactory)
@@ -153,6 +159,17 @@ public sealed class AudioDeck : IDisposable
             _volume = new VolumeSampleProvider(_eq) { Volume = _volumeLevel };
             _tIn = tIn;
 
+            // Tap the final signal for UI metering (waveform display). ~20 updates/sec.
+            var meter = new MeteringSampleProvider(_volume,
+                Math.Max(1, _volume.WaveFormat.SampleRate / 20));
+            meter.StreamVolume += (_, e) =>
+            {
+                float peak = 0f;
+                for (int i = 0; i < e.MaxSampleValues.Length; i++)
+                    peak = Math.Max(peak, e.MaxSampleValues[i]);
+                LevelMeasured?.Invoke(this, peak);
+            };
+
             _loadedTOut = tOut;
             _loadedFadeIn = fadeIn;
             _loadedFadeOut = fadeOut;
@@ -160,7 +177,7 @@ public sealed class AudioDeck : IDisposable
             _loadedFadeOutShape = fadeOutShape;
 
             _player = _playerFactory.Create(Role);
-            _player.Init(_volume);
+            _player.Init(meter);
 
             CurrentTrackPath = path;
             TransitionTo(DeckState.Loaded);

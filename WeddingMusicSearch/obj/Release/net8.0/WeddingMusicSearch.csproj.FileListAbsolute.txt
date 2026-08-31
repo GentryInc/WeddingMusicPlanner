@@ -1,0 +1,15 @@
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\bin\Release\net8.0\WeddingMusicSearch.deps.json
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\bin\Release\net8.0\WeddingMusicSearch.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\bin\Release\net8.0\WeddingMusicSearch.pdb
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\bin\Release\net8.0\WeddingMusicData.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\bin\Release\net8.0\WeddingMusicData.pdb
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.csproj.AssemblyReference.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.AssemblyInfoInputs.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.AssemblyInfo.cs
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.csproj.CoreCompileInputs.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingM.CCE956CD.Up2Date
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\refint\WeddingMusicSearch.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\WeddingMusicSearch.pdb
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicSearch\obj\Release\net8.0\ref\WeddingMusicSearch.dll

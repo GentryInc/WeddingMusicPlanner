@@ -17,7 +17,12 @@ public sealed class AggregateSearchService : ISearchService
     {
         // Exclude self to avoid recursion if this is registered in the same collection.
         _sources = sources.Where(s => s is not AggregateSearchService).ToList();
-        _perSourceTimeout = perSourceTimeout ?? TimeSpan.FromSeconds(8);
+        // Give each source enough headroom to absorb its own retry/back-off budget.
+        // YouTube in particular pairs a rate limiter with a retry policy, so an 8s
+        // ceiling used to cancel it mid-retry and surface a bogus "Timed out". 20s
+        // comfortably covers the bounded retry budget while still bailing on a truly
+        // dead provider so one source never blocks the merged results indefinitely.
+        _perSourceTimeout = perSourceTimeout ?? TimeSpan.FromSeconds(20);
     }
 
     public SearchSource Source => SearchSource.Local; // aggregate identity; not meaningful

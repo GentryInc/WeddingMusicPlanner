@@ -32,6 +32,13 @@ public sealed class OfflineCacheService : IOfflineCacheService
     private readonly string _cacheDirectory;
     private readonly IStreamSourceLocator? _locator;
 
+    // YoutubeExplode requires a client configured with its own handler (automatic
+    // decompression, no shared default headers / pooled connection state). Reusing
+    // the shared "cache" HttpClient makes YouTube reject search and stream requests,
+    // which is why resolution fails in-app but works with a stand-alone YoutubeClient.
+    // A single dedicated instance is created once and reused for all YouTube calls.
+    private readonly YoutubeClient _youtube = new();
+
     public OfflineCacheService(
         IDbContextFactory<WeddingMusicContext> dbFactory,
         HttpClient http,
@@ -42,7 +49,18 @@ public sealed class OfflineCacheService : IOfflineCacheService
         _http = http;
         _cacheDirectory = cacheDirectory;
         _locator = locator;
-        Directory.CreateDirectory(_cacheDirectory);
+
+        try
+        {
+            Directory.CreateDirectory(_cacheDirectory);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Failed to create cache directory at {_cacheDirectory}. " +
+                $"Please check folder permissions or run as administrator. Error: {ex.Message}", 
+                ex);
+        }
     }
 
     public string? ResolveLocalPath(Track track)
@@ -124,29 +142,98 @@ public sealed class OfflineCacheService : IOfflineCacheService
             track.CachedUtc = null;
         }
 
-        // Nothing to download from.
-        if (string.IsNullOrWhiteSpace(track.ExternalUri))
-            return null;
-
         // A YouTube watch URL carries no direct audio payload; resolve the video's
         // audio-only stream and cache that instead of fetching the HTML page.
-        if (VideoId.TryParse(track.ExternalUri) is { } videoId)
+        if (!string.IsNullOrWhiteSpace(track.ExternalUri)
+            && VideoId.TryParse(track.ExternalUri) is { } videoId)
             return await CacheYouTubeAudioAsync(track, videoId, ct).ConfigureAwait(false);
 
-        // Direct audio URL (e.g. a CDN-hosted MP3): plain download.
-        var direct = await TryCacheDirectDownloadAsync(track, ct).ConfigureAwait(false);
-        if (direct is not null)
-            return direct;
-
-        // Reference-only page (e.g. Spotify): find the same song on YouTube and stream that.
-        if (_locator is not null
-            && await _locator.FindPlayableUriAsync(track, ct).ConfigureAwait(false) is { } altUri
-            && VideoId.TryParse(altUri) is { } altVideoId)
+        // Direct audio URL (e.g. a CDN-hosted MP3): plain download. Only meaningful
+        // when the reference is an http(s) URL, not a scheme like spotify:track:.
+        if (!string.IsNullOrWhiteSpace(track.ExternalUri)
+            && Uri.TryCreate(track.ExternalUri, UriKind.Absolute, out var extUri)
+            && (extUri.Scheme == Uri.UriSchemeHttp || extUri.Scheme == Uri.UriSchemeHttps))
         {
-            return await CacheYouTubeAudioAsync(track, altVideoId, ct).ConfigureAwait(false);
+            var direct = await TryCacheDirectDownloadAsync(track, ct).ConfigureAwait(false);
+            if (direct is not null)
+                return direct;
         }
 
-        return null;
+        // Reference-only track (e.g. Spotify): find the same song on YouTube and stream
+        // that. This works from the title/artist metadata alone, so it does NOT require
+        // ExternalUri to be set.
+        //
+        // Order matters for reliability: YoutubeExplode's built-in search is used FIRST
+        // because it needs no API key/quota and does not go through the Polly retry /
+        // circuit-breaker / rate-limiter stack that wraps the Data-API locator. That
+        // policy stack can stall for many seconds (slow retries, an open breaker, a
+        // saturated rate limiter), which is exactly what caused playback to hang. The
+        // Data-API locator is only tried as a secondary path, and with its own short
+        // time bound so it can never consume the whole caching budget.
+        if (await FindYouTubeVideoByMetadataAsync(track, ct).ConfigureAwait(false) is { } explodeId)
+            return await CacheYouTubeAudioAsync(track, explodeId, ct).ConfigureAwait(false);
+
+        if (_locator is not null)
+        {
+            using var locatorCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            locatorCts.CancelAfter(TimeSpan.FromSeconds(8));
+            try
+            {
+                if (await _locator.FindPlayableUriAsync(track, locatorCts.Token).ConfigureAwait(false) is { } altUri
+                    && VideoId.TryParse(altUri) is { } altVideoId)
+                {
+                    return await CacheYouTubeAudioAsync(track, altVideoId, ct).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                // Locator exceeded its own budget; the YoutubeExplode path above already
+                // had its chance, so fall through to the descriptive failure below.
+            }
+        }
+        // Nothing resolved. Surface a specific reason instead of silently returning
+        // null so the UI can tell the operator what actually went wrong.
+        if (string.IsNullOrWhiteSpace(track.Title))
+            throw new InvalidOperationException(
+                "YouTube lookup skipped: this track has no title/artist metadata to search with.");
+
+        throw new InvalidOperationException(
+            $"YouTube search returned no playable result for \"{track.Artist} {track.Title}\".");
+    }
+
+    /// <summary>
+    /// Quota-free fallback that locates a matching YouTube video for a reference-only
+    /// track (e.g. one added from Spotify) using YoutubeExplode's built-in search
+    /// instead of the YouTube Data API. This guarantees Spotify songs remain playable
+    /// even when no Data API key is configured or its daily quota is exhausted.
+    /// </summary>
+    private async Task<VideoId?> FindYouTubeVideoByMetadataAsync(Track track, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(track.Title))
+            return null;
+
+        var term = string.IsNullOrWhiteSpace(track.Artist)
+            ? track.Title
+            : $"{track.Artist} {track.Title}";
+
+        try
+        {
+            await foreach (var result in _youtube.Search.GetVideosAsync(term, ct).ConfigureAwait(false))
+            {
+                return result.Id;
+            }
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Bubble the real reason (network, YouTube parser/cipher change, etc.) so
+            // the operator sees an actionable message instead of a generic failure.
+            throw new InvalidOperationException($"YouTube search failed: {ex.Message}", ex);
+        }
     }
 
     /// <summary>Plain HTTP download of a direct audio URL; null when the response isn't audio.</summary>
@@ -206,8 +293,7 @@ public sealed class OfflineCacheService : IOfflineCacheService
         var targetPath = Path.ChangeExtension(BuildCachePath(track.ExternalUri!), ".m4a");
         try
         {
-            var youtube = new YoutubeClient(_http);
-            var manifest = await youtube.Videos.Streams.GetManifestAsync(videoId, ct).ConfigureAwait(false);
+            var manifest = await _youtube.Videos.Streams.GetManifestAsync(videoId, ct).ConfigureAwait(false);
             var streamInfo = manifest.GetAudioOnlyStreams()
                 .Where(s => s.Container == Container.Mp4)
                 .OrderByDescending(s => s.Bitrate)
@@ -216,7 +302,7 @@ public sealed class OfflineCacheService : IOfflineCacheService
                 throw new InvalidOperationException("no MP4/AAC audio stream available for this video");
 
             var tmp = targetPath + ".part";
-            await youtube.Videos.Streams.DownloadAsync(streamInfo, tmp, cancellationToken: ct).ConfigureAwait(false);
+            await _youtube.Videos.Streams.DownloadAsync(streamInfo, tmp, cancellationToken: ct).ConfigureAwait(false);
             File.Move(tmp, targetPath, overwrite: true);
 
             MarkCached(track, targetPath);

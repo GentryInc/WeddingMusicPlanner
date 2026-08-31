@@ -1,0 +1,255 @@
+﻿using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using WeddingMusicSearch.Abstractions;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Embedded Kestrel server hosting the guest song-request page on the venue LAN.
+/// Guests scan a QR code pointing at <see cref="RequestUrl"/>, search the DJ's
+/// local library, and submit a request that lands in the Requests panel.
+/// </summary>
+public interface IRequestWebServer
+{
+    /// <summary>The LAN URL guests open, e.g. http://192.168.1.10:8420/.</summary>
+    string RequestUrl { get; }
+
+    /// <summary>True once Kestrel is accepting connections.</summary>
+    bool IsRunning { get; }
+}
+
+public sealed class RequestWebServer : BackgroundService, IRequestWebServer
+{
+    public const int Port = 8420;
+
+    private readonly ISongRequestService _requests;
+    private WebApplication? _app;
+
+    public RequestWebServer(ISongRequestService requests) => _requests = requests;
+
+    public bool IsRunning { get; private set; }
+
+    public string RequestUrl => $"http://{GetLanIPv4()}:{Port}/";
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseUrls($"http://*:{Port}");
+        _app = builder.Build();
+
+        _app.MapGet("/", () => Results.Content(RequestPageHtml, "text/html"));
+
+        _app.MapGet("/api/search", async (string? q, CancellationToken ct) =>
+        {
+            var hits = await _requests.SearchAsync(q ?? string.Empty, 20, ct).ConfigureAwait(false);
+            return Results.Json(hits.Select(h => new HitDto(
+                h.Source.ToString(),
+                h.ExternalId,
+                h.Title,
+                h.Artist ?? "Unknown Artist",
+                h.Album,
+                h.Uri,
+                h.DurationMs,
+                h.DurationMs is { } ms and > 0
+                    ? TimeSpan.FromMilliseconds(ms).ToString(@"m\:ss")
+                    : string.Empty)));
+        });
+
+        _app.MapPost("/api/request", async (RequestDto dto, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(dto.Title) ||
+                !Enum.TryParse<SearchSource>(dto.Source, ignoreCase: true, out var source) ||
+                source is not (SearchSource.Spotify or SearchSource.YouTube))
+            {
+                return Results.BadRequest();
+            }
+
+            var hit = new SearchResult
+            {
+                Source = source,
+                ExternalId = dto.ExternalId,
+                Title = dto.Title,
+                Artist = dto.Artist,
+                Album = dto.Album,
+                Uri = dto.Uri,
+                DurationMs = dto.DurationMs
+            };
+
+            bool ok = await _requests.CreateRequestAsync(hit, dto.GuestName, ct).ConfigureAwait(false);
+            return ok ? Results.Ok() : Results.NotFound();
+        });
+
+        try
+        {
+            await _app.StartAsync(stoppingToken).ConfigureAwait(false);
+            IsRunning = true;
+            await Task.Delay(Timeout.Infinite, stoppingToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown.
+        }
+        catch (Exception)
+        {
+            // Port in use / firewall refusal: the request feature degrades gracefully;
+            // the rest of the app (playback, playlists) must keep working.
+            IsRunning = false;
+        }
+        finally
+        {
+            IsRunning = false;
+            if (_app is not null)
+                await _app.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Best-effort LAN IPv4 so the QR code points at an address guests can reach.</summary>
+    private static string GetLanIPv4()
+    {
+        try
+        {
+            var candidate = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(n => n.OperationalStatus == OperationalStatus.Up
+                            && n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+                .Select(a => a.Address)
+                .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork
+                                     && !IPAddress.IsLoopback(a));
+            return candidate?.ToString() ?? "localhost";
+        }
+        catch
+        {
+            return "localhost";
+        }
+    }
+
+    private sealed record HitDto(
+        string Source, string? ExternalId, string Title, string Artist,
+        string? Album, string? Uri, long? DurationMs, string Duration);
+
+    private sealed record RequestDto(
+        [property: JsonPropertyName("source")] string Source,
+        [property: JsonPropertyName("externalId")] string? ExternalId,
+        [property: JsonPropertyName("title")] string Title,
+        [property: JsonPropertyName("artist")] string? Artist,
+        [property: JsonPropertyName("album")] string? Album,
+        [property: JsonPropertyName("uri")] string? Uri,
+        [property: JsonPropertyName("durationMs")] long? DurationMs,
+        [property: JsonPropertyName("guestName")] string? GuestName);
+
+    /// <summary>Self-contained mobile-friendly request page (no external assets).</summary>
+    private const string RequestPageHtml = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request a Song</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background:#14141c; color:#eee; margin:0; padding:16px; }
+  h1 { font-size:1.4rem; text-align:center; }
+  input { width:100%; box-sizing:border-box; padding:12px; font-size:1rem; border-radius:8px; border:1px solid #444; background:#22222e; color:#eee; margin-bottom:10px; }
+  .hit { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-bottom:1px solid #2c2c3a; }
+  .hit .meta { flex:1; min-width:0; }
+  .hit .title { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hit .artist { font-size:.85rem; color:#aaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  button { padding:10px 14px; font-size:.95rem; border:none; border-radius:8px; background:#7c5cff; color:white; }
+  button:disabled { background:#3a3a4a; }
+  #status { text-align:center; margin-top:12px; min-height:1.2em; }
+  .ok { color:#7dff9b; } .err { color:#ff8b8b; }
+</style>
+</head>
+<body>
+  <h1>&#127925; Request a Song</h1>
+  <input id="name" placeholder="Your name (optional)" maxlength="128">
+  <input id="q" placeholder="Search songs or artists&hellip;" autofocus>
+  <div id="results"></div>
+  <div id="status"></div>
+<script>
+  const q = document.getElementById('q');
+  const results = document.getElementById('results');
+  const status = document.getElementById('status');
+  let timer = null;
+
+  q.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(search, 300);
+  });
+
+  async function search() {
+    const term = q.value.trim();
+    if (!term) { results.innerHTML = ''; return; }
+    try {
+      const res = await fetch('/api/search?q=' + encodeURIComponent(term));
+      const hits = await res.json();
+      results.innerHTML = '';
+      if (hits.length === 0) {
+        results.innerHTML = '<div class="hit"><div class="meta"><div class="artist">No matches found</div></div></div>';
+        return;
+      }
+      for (const h of hits) {
+        const row = document.createElement('div');
+        row.className = 'hit';
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = h.title;
+        const artist = document.createElement('div');
+        artist.className = 'artist';
+        const dur = h.duration ? ' \u00b7 ' + h.duration : '';
+        const src = h.source && h.source !== 'Local' ? ' \u00b7 ' + h.source : '';
+        artist.textContent = h.artist + dur + src;
+        meta.append(title, artist);
+        const btn = document.createElement('button');
+        btn.textContent = 'Request';
+        btn.onclick = () => sendRequest(h, btn);
+        row.append(meta, btn);
+        results.appendChild(row);
+      }
+    } catch {
+      status.textContent = 'Search failed \u2014 check your connection.';
+      status.className = 'err';
+    }
+  }
+
+  async function sendRequest(hit, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: hit.source,
+          externalId: hit.externalId,
+          title: hit.title,
+          artist: hit.artist,
+          album: hit.album,
+          uri: hit.uri,
+          durationMs: hit.durationMs,
+          guestName: document.getElementById('name').value
+        })
+      });
+      if (res.ok) {
+        btn.textContent = 'Requested \u2713';
+        status.textContent = 'Request sent to the DJ!';
+        status.className = 'ok';
+      } else { throw new Error(); }
+    } catch {
+      btn.disabled = false;
+      status.textContent = 'Could not send the request. Try again.';
+      status.className = 'err';
+    }
+  }
+</script>
+</body>
+</html>
+""";
+}

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj": {}
+    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj": {}
   },
   "projects": {
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
+    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
+        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
         "projectName": "WeddingAudioEngine",
-        "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
+        "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
         "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\obj\\",
+        "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -77,14 +77,14 @@
         }
       }
     },
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
+    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
+        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
         "projectName": "WeddingMusicData",
-        "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
+        "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
         "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\obj\\",
+        "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -164,14 +164,14 @@
         }
       }
     },
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj": {
+    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
         "projectName": "WeddingMusicPlannerPro.Wpf",
-        "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+        "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
         "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\obj\\",
+        "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicPlannerPro.Wpf\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -193,14 +193,14 @@
             "framework": "net8.0-windows7.0",
             "targetAlias": "net8.0-windows",
             "projectReferences": {
-              "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
-                "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj"
+              "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
+                "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj"
               },
-              "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
-                "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj"
+              "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
+                "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj"
               },
-              "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj": {
-                "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj"
+              "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj": {
+                "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj"
               }
             }
           }
@@ -237,6 +237,10 @@
             "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[8.0.1, )"
+            },
+            "QRCoder": {
+              "target": "Package",
+              "version": "[1.6.0, )"
             }
           },
           "imports": [
@@ -251,6 +255,9 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             },
@@ -262,14 +269,14 @@
         }
       }
     },
-    "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj": {
+    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj",
+        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj",
         "projectName": "WeddingMusicSearch",
-        "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj",
+        "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicSearch\\WeddingMusicSearch.csproj",
         "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicSearch\\obj\\",
+        "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicSearch\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -291,8 +298,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
-                "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj"
+              "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
+                "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj"
               }
             }
           }

@@ -1,0 +1,95 @@
+﻿Test run completed. Ran 41 test(s). 39 Passed, 2 Failed 
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_IsClampedAtEndpoints(shape: EqualPower) Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_FollowsCurve_AtMidpoints(shape: SCurve, p: 0.5, expected: 0.5) Passed
+WeddingMusicData.Tests.OfflineCacheIntegrationTests.NetworkDropout_AfterCaching_ResolvesToLocalBuffer Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Load_TransitionsToLoaded_AndInitializesPlayer Passed
+WeddingAudioEngine.Tests.EnvelopeTests.Read_StopsExactly_AtTOut Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Pause_WhenNotPlaying_Throws Passed
+WeddingAudioEngine.Tests.EqualizerTests.FlatEq_IsTransparent Passed
+WeddingAudioEngine.Tests.MemoryCleanupTests.Stop_DisposesPlayerAndSource_Deterministically Passed
+WeddingAudioEngine.Tests.EqualizerTests.SettingAnyBand_MarksActive_AndClampsToTwelveDb Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.EmergencyFade_WhenNotPlaying_IsNoOp Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_IsClampedAtEndpoints(shape: Logarithmic) Passed
+WeddingAudioEngine.Tests.FadeShapeTests.NonLinearCurves_DifferFromLinear_MidRamp Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_FollowsCurve_AtMidpoints(shape: SCurve, p: 0.25, expected: 0.15625) Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Play_FromLoaded_TransitionsToPlaying Passed
+WeddingAudioEngine.Tests.DualDeckRoutingTests.MasterAndCue_RouteToCorrectDeckRoles Passed
+WeddingAudioEngine.Tests.MemoryCleanupTests.EngineDispose_DisposesBothDecks Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_FollowsCurve_AtMidpoints(shape: Logarithmic, p: 0.5, expected: 0.25) Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Stop_ReleasesPipeline_AndAllowsReload Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_ClampsPastEnd_IntoPlayableWindow Failed | Error: System.InvalidOperationException : Cannot load while Playing; stop the deck first. | StackTrace:    at WeddingAudioEngine.AudioDeck.Load(String path, TimeSpan tIn, TimeSpan tOut, Nullable`1 fadeIn, Nullable`1 fadeOut, FadeShape fadeInShape, FadeShape fadeOutShape) in C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs:line 120
+   at WeddingAudioEngine.AudioDeck.Seek(TimeSpan position) in C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs:line 235
+   at WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_ClampsPastEnd_IntoPlayableWindow() in C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine.Tests\DeckStateMachineTests.cs:line 191
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+WeddingMusicData.Tests.OfflineCacheIntegrationTests.PreCache_DownloadsStream_AndFlagsTrackOffline Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Play_FromIdle_Throws Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Load_WhilePlaying_Throws Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Pause_FromPlaying_ThenResume Passed
+WeddingMusicData.Tests.OfflineCacheIntegrationTests.NetworkDown_WithoutPriorCache_FailsGracefully_NoFlag Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.NewDeck_IsIdle Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_FollowsCurve_AtMidpoints(shape: Linear, p: 0.5, expected: 0.5) Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Dispose_TransitionsToDisposed_AndBlocksFurtherUse Passed
+WeddingAudioEngine.Tests.MemoryCleanupTests.DisposedDeck_IsGarbageCollected_NoRootedReferences Passed
+WeddingAudioEngine.Tests.EqualizerTests.BassBoost_IncreasesEnergy_OnLowFrequencyContent Passed
+WeddingAudioEngine.Tests.MemoryCleanupTests.Reload_DisposesPreviousPipeline_NoLeakedSources Passed
+WeddingMusicData.Tests.OfflineCacheIntegrationTests.CacheSections_CachesAllUncachedTracksInBucket Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_WhilePlaying_RebuildsPipeline_AndKeepsPlaying Failed | Error: System.InvalidOperationException : Cannot load while Playing; stop the deck first. | StackTrace:    at WeddingAudioEngine.AudioDeck.Load(String path, TimeSpan tIn, TimeSpan tOut, Nullable`1 fadeIn, Nullable`1 fadeOut, FadeShape fadeInShape, FadeShape fadeOutShape) in C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs:line 120
+   at WeddingAudioEngine.AudioDeck.Seek(TimeSpan position) in C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs:line 235
+   at WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_WhilePlaying_RebuildsPipeline_AndKeepsPlaying() in C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine.Tests\DeckStateMachineTests.cs:line 151
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_FollowsCurve_AtMidpoints(shape: EqualPower, p: 0.5, expected: 0.70710677) Passed
+WeddingAudioEngine.Tests.DualDeckRoutingTests.EmergencyFade_OnlyAffectsMasterDeck Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.EmergencyFade_TransitionsThroughFading_ToStopped_AndDisposesStream Passed
+WeddingAudioEngine.Tests.EnvelopeTests.TOut_BeforeTIn_Throws Passed
+WeddingMusicData.Tests.OfflineCacheIntegrationTests.EnsureCached_IsIdempotent_DoesNotReDownload Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_FromIdle_Throws Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_IsClampedAtEndpoints(shape: SCurve) Passed
+WeddingAudioEngine.Tests.FadeShapeTests.Gain_IsClampedAtEndpoints(shape: Linear) Passed
+WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_WhilePaused_StaysPaused Passed
+
+Test Output:
+[Informational] Test data store opened in 0.149 sec.
+[Warning] The following test container was not found: 'C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingAudioEngine.Tests\bin\Debug\net8.0-windows\WeddingAudioEngine.Tests.dll'. This can be resolved by one or more of the following steps:
+1. The test container does not exist on disk and the corresponding project might need to be built successfully.
+2. For .NET Core based test projects, please ensure that a nuget package reference to "Microsoft.NET.Test.SDK" exists and that it uses the latest stable version.
+3. For .NET based test projects, the project might be marked as a non-test project through an msbuild property, "IsTestProject". Please consider clearing it or set "<IsTestProject>true</IsTestProject>" in a "<PropertyGroup>" in the test project.
+[Warning] The following test container was not found: 'C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingMusicData.Tests\bin\Debug\net8.0\WeddingMusicData.Tests.dll'. This can be resolved by one or more of the following steps:
+1. The test container does not exist on disk and the corresponding project might need to be built successfully.
+2. For .NET Core based test projects, please ensure that a nuget package reference to "Microsoft.NET.Test.SDK" exists and that it uses the latest stable version.
+3. For .NET based test projects, the project might be marked as a non-test project through an msbuild property, "IsTestProject". Please consider clearing it or set "<IsTestProject>true</IsTestProject>" in a "<PropertyGroup>" in the test project.
+[Informational] Building Test Projects
+[Informational] Starting test discovery for requested test run
+[Informational] ========== Starting test discovery ==========
+[Informational] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.30)
+[Informational] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.30)
+[Informational] [xUnit.net 00:00:01.07]   Discovering: WeddingMusicData.Tests
+[Informational] [xUnit.net 00:00:01.15]   Discovered:  WeddingMusicData.Tests
+[Informational] [xUnit.net 00:00:01.17]   Discovering: WeddingAudioEngine.Tests
+[Informational] [xUnit.net 00:00:01.26]   Discovered:  WeddingAudioEngine.Tests
+[Informational] ========== Test discovery finished: 41 Tests found in 4.9 sec ==========
+[Informational] ========== Starting test run ==========
+[Informational] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.30)
+[Informational] [xUnit.net 00:00:00.12]   Starting:    WeddingAudioEngine.Tests
+[Error] [xUnit.net 00:00:00.65]     WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_WhilePlaying_RebuildsPipeline_AndKeepsPlaying [FAIL]
+[Informational] [xUnit.net 00:00:00.65]       System.InvalidOperationException : Cannot load while Playing; stop the deck first.
+[Informational] [xUnit.net 00:00:00.65]       Stack Trace:
+[Informational] [xUnit.net 00:00:00.65]         C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs(120,0): at WeddingAudioEngine.AudioDeck.Load(String path, TimeSpan tIn, TimeSpan tOut, Nullable`1 fadeIn, Nullable`1 fadeOut, FadeShape fadeInShape, FadeShape fadeOutShape)
+[Informational] [xUnit.net 00:00:00.66]         C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs(235,0): at WeddingAudioEngine.AudioDeck.Seek(TimeSpan position)
+[Informational] [xUnit.net 00:00:00.66]         C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine.Tests\DeckStateMachineTests.cs(151,0): at WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_WhilePlaying_RebuildsPipeline_AndKeepsPlaying()
+[Informational] [xUnit.net 00:00:00.66]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[Informational] [xUnit.net 00:00:00.66]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[Error] [xUnit.net 00:00:00.66]     WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_ClampsPastEnd_IntoPlayableWindow [FAIL]
+[Informational] [xUnit.net 00:00:00.66]       System.InvalidOperationException : Cannot load while Playing; stop the deck first.
+[Informational] [xUnit.net 00:00:00.66]       Stack Trace:
+[Informational] [xUnit.net 00:00:00.66]         C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs(120,0): at WeddingAudioEngine.AudioDeck.Load(String path, TimeSpan tIn, TimeSpan tOut, Nullable`1 fadeIn, Nullable`1 fadeOut, FadeShape fadeInShape, FadeShape fadeOutShape)
+[Informational] [xUnit.net 00:00:00.66]         C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\AudioDeck.cs(235,0): at WeddingAudioEngine.AudioDeck.Seek(TimeSpan position)
+[Informational] [xUnit.net 00:00:00.66]         C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine.Tests\DeckStateMachineTests.cs(191,0): at WeddingAudioEngine.Tests.DeckStateMachineTests.Seek_ClampsPastEnd_IntoPlayableWindow()
+[Informational] [xUnit.net 00:00:00.66]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[Informational] [xUnit.net 00:00:00.66]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[Informational] [xUnit.net 00:00:00.66]   Finished:    WeddingAudioEngine.Tests
+[Informational] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.30)
+[Informational] [xUnit.net 00:00:00.09]   Starting:    WeddingMusicData.Tests
+[Informational] [xUnit.net 00:00:02.86]   Finished:    WeddingMusicData.Tests
+[Informational] ========== Test run finished: 41 Tests (39 Passed, 2 Failed, 0 Skipped) run in 2.9 sec ==========

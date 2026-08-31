@@ -2452,11 +2452,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
+      "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
       "projectName": "WeddingMusicData",
-      "projectPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
+      "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
       "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\WeddingMusicData\\obj\\",
+      "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,0 +1,150 @@
+﻿using Microsoft.EntityFrameworkCore;
+using WeddingMusicData.Models;
+
+namespace WeddingMusicData;
+
+public class WeddingMusicContext : DbContext
+{
+    public WeddingMusicContext(DbContextOptions<WeddingMusicContext> options) : base(options) { }
+
+    public DbSet<Track> Tracks => Set<Track>();
+    public DbSet<CueSettings> CueSettings => Set<CueSettings>();
+    public DbSet<PlaylistSection> PlaylistSections => Set<PlaylistSection>();
+    public DbSet<PlaylistItem> PlaylistItems => Set<PlaylistItem>();
+    public DbSet<SongRequest> SongRequests => Set<SongRequest>();
+    public DbSet<PlayHistory> PlayHistory => Set<PlayHistory>();
+    public DbSet<EventProfile> EventProfiles => Set<EventProfile>();
+    public DbSet<PlanningEntry> PlanningEntries => Set<PlanningEntry>();
+
+    protected override void OnModelCreating(ModelBuilder b)
+    {
+        // --- Track --------------------------------------------------------
+        b.Entity<Track>(e =>
+        {
+            e.HasKey(t => t.Id);
+
+            // Unique file path — the natural key for ingestion idempotency.
+            e.HasIndex(t => t.FilePath).IsUnique();
+
+            // Content hash lookups for de-dup / moved-file detection.
+            e.HasIndex(t => t.ContentHash);
+
+            // Covering-ish indexes for the hot live-event query paths.
+            e.HasIndex(t => t.Title);
+            e.HasIndex(t => new { t.Artist, t.Title });
+            e.HasIndex(t => t.Bpm);          // rapid BPM-range filtering for mixing
+            e.HasIndex(t => t.IsAvailable);  // filter out missing files fast
+            e.HasIndex(t => t.IsCachedOffline); // fail-safe: find un-cached upcoming tracks fast
+            e.HasIndex(t => t.Genre);        // smart genre filtering
+
+            e.HasOne(t => t.CueSettings)
+             .WithOne(c => c.Track)
+             .HasForeignKey<CueSettings>(c => c.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- CueSettings --------------------------------------------------
+        b.Entity<CueSettings>(e =>
+        {
+            e.HasKey(c => c.Id);
+            e.HasIndex(c => c.TrackId).IsUnique();  // enforce one-to-one
+            e.Property(c => c.FadeInCurve).HasConversion<int>();
+            e.Property(c => c.FadeOutCurve).HasConversion<int>();
+        });
+
+        // --- PlaylistSection ---------------------------------------------
+        b.Entity<PlaylistSection>(e =>
+        {
+            e.HasKey(s => s.Id);
+            e.HasIndex(s => s.Order);
+            e.Property(s => s.TransitionMode).HasConversion<int>();
+
+            // Optional self-referencing chain link. Detaching (SetNull) rather than
+            // cascading keeps a deleted section from wiping the sections that pointed at it.
+            e.HasOne(s => s.NextSection)
+             .WithMany()
+             .HasForeignKey(s => s.NextSectionId)
+             .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // --- PlaylistItem -------------------------------------------------
+        b.Entity<PlaylistItem>(e =>
+        {
+            e.HasKey(i => i.Id);
+
+            // The primary live-cueing access pattern: fetch a section's tracks in order.
+            e.HasIndex(i => new { i.PlaylistSectionId, i.Position });
+
+            e.Property(i => i.TransitionModeOverride).HasConversion<int?>();
+
+            e.HasOne(i => i.Section)
+             .WithMany(s => s.Items)
+             .HasForeignKey(i => i.PlaylistSectionId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(i => i.Track)
+             .WithMany(t => t.PlaylistItems)
+             .HasForeignKey(i => i.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- SongRequest ---------------------------------------------------
+        b.Entity<SongRequest>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.GuestName).HasMaxLength(128);
+            e.Property(r => r.Status).HasConversion<int>();
+
+            // Hot path: the DJ panel lists pending requests newest-first.
+            e.HasIndex(r => new { r.Status, r.RequestedUtc });
+
+            e.HasOne(r => r.Track)
+             .WithMany()
+             .HasForeignKey(r => r.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- PlayHistory ---------------------------------------------------
+        b.Entity<PlayHistory>(e =>
+        {
+            e.HasKey(h => h.Id);
+
+            // Keepsake export lists played songs chronologically.
+            e.HasIndex(h => h.PlayedUtc);
+
+            e.HasOne(h => h.Track)
+             .WithMany()
+             .HasForeignKey(h => h.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- EventProfile (CRM) -------------------------------------------
+        b.Entity<EventProfile>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Status).HasConversion<int>();
+            e.HasIndex(p => p.EventDate);
+            e.HasIndex(p => p.Status);
+
+            // Detach (SetNull) rather than cascade so deleting a playlist section
+            // does not wipe the couple's CRM profile.
+            e.HasOne(p => p.PlaylistSection)
+             .WithMany()
+             .HasForeignKey(p => p.PlaylistSectionId)
+             .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // --- PlanningEntry (CRM) ------------------------------------------
+        b.Entity<PlanningEntry>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Kind).HasConversion<int>();
+            e.HasIndex(p => new { p.EventProfileId, p.Kind, p.Position });
+
+            e.HasOne(p => p.EventProfile)
+             .WithMany(p => p.PlanningEntries)
+             .HasForeignKey(p => p.EventProfileId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+}

@@ -49,12 +49,88 @@ public static class DatabaseInitializer
     {
         await AddColumnIfMissingAsync(db, "Tracks", "MusicalKey", "TEXT", ct).ConfigureAwait(false);
 
+        // Audio peak normalisation columns (precomputed per-track gain). Added
+        // idempotently so playback code selecting these never fails.
+        await AddColumnIfMissingAsync(db, "Tracks", "PeakAmplitude", "REAL", ct).ConfigureAwait(false);
+        await AddColumnIfMissingAsync(db, "Tracks", "NormalizationGainDb", "REAL", ct).ConfigureAwait(false);
+
         // AddPlaylistChainAndLoop columns. These can go missing if that migration is
         // not discovered by EF (e.g. its *.Designer.cs — which carries the [Migration]
         // attribute — is absent), in which case MigrateAsync silently skips it. Patch
         // them idempotently so a query selecting p.IsLooping never fails.
         await AddColumnIfMissingAsync(db, "PlaylistSections", "IsLooping", "INTEGER NOT NULL DEFAULT 0", ct).ConfigureAwait(false);
         await AddColumnIfMissingAsync(db, "PlaylistSections", "NextSectionId", "INTEGER", ct).ConfigureAwait(false);
+
+        // Guest song requests (LAN request page). Created idempotently because this
+        // table was introduced without a generated migration.
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS \"SongRequests\" (" +
+            "\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_SongRequests\" PRIMARY KEY AUTOINCREMENT, " +
+            "\"TrackId\" INTEGER NOT NULL, " +
+            "\"GuestName\" TEXT NULL, " +
+            "\"Status\" INTEGER NOT NULL DEFAULT 0, " +
+            "\"RequestedUtc\" TEXT NOT NULL, " +
+            "\"ResolvedUtc\" TEXT NULL, " +
+            "CONSTRAINT \"FK_SongRequests_Tracks_TrackId\" FOREIGN KEY (\"TrackId\") " +
+            "REFERENCES \"Tracks\" (\"Id\") ON DELETE CASCADE);", ct).ConfigureAwait(false);
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS \"IX_SongRequests_Status_RequestedUtc\" " +
+            "ON \"SongRequests\" (\"Status\", \"RequestedUtc\");", ct).ConfigureAwait(false);
+
+        // VIP (bride) priority flag, added after the table's introduction.
+        await AddColumnIfMissingAsync(db, "SongRequests", "IsPriority", "INTEGER NOT NULL DEFAULT 0", ct).ConfigureAwait(false);
+        await AddColumnIfMissingAsync(db, "SongRequests", "TipCents", "INTEGER NOT NULL DEFAULT 0", ct).ConfigureAwait(false);
+
+        // Play history (wedding keepsake export). Created idempotently because this
+        // table was introduced without a generated migration.
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS \"PlayHistory\" (" +
+            "\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_PlayHistory\" PRIMARY KEY AUTOINCREMENT, " +
+            "\"TrackId\" INTEGER NOT NULL, " +
+            "\"PlayedUtc\" TEXT NOT NULL, " +
+            "CONSTRAINT \"FK_PlayHistory_Tracks_TrackId\" FOREIGN KEY (\"TrackId\") " +
+            "REFERENCES \"Tracks\" (\"Id\") ON DELETE CASCADE);", ct).ConfigureAwait(false);
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS \"IX_PlayHistory_PlayedUtc\" " +
+            "ON \"PlayHistory\" (\"PlayedUtc\");", ct).ConfigureAwait(false);
+
+        // Event CRM (couple profiles + planning form entries). Created idempotently
+        // because these tables are introduced without a generated migration.
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS \"EventProfiles\" (" +
+            "\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_EventProfiles\" PRIMARY KEY AUTOINCREMENT, " +
+            "\"CoupleNames\" TEXT NOT NULL, " +
+            "\"EventDate\" TEXT NULL, " +
+            "\"VenueName\" TEXT NULL, " +
+            "\"VenueAddress\" TEXT NULL, " +
+            "\"ContactName\" TEXT NULL, " +
+            "\"ContactEmail\" TEXT NULL, " +
+            "\"ContactPhone\" TEXT NULL, " +
+            "\"Status\" INTEGER NOT NULL DEFAULT 0, " +
+            "\"Notes\" TEXT NULL, " +
+            "\"PlaylistSectionId\" INTEGER NULL, " +
+            "\"CreatedUtc\" TEXT NOT NULL, " +
+            "\"UpdatedUtc\" TEXT NULL, " +
+            "CONSTRAINT \"FK_EventProfiles_PlaylistSections_PlaylistSectionId\" FOREIGN KEY (\"PlaylistSectionId\") " +
+            "REFERENCES \"PlaylistSections\" (\"Id\") ON DELETE SET NULL);", ct).ConfigureAwait(false);
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS \"IX_EventProfiles_EventDate\" ON \"EventProfiles\" (\"EventDate\");", ct).ConfigureAwait(false);
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS \"IX_EventProfiles_Status\" ON \"EventProfiles\" (\"Status\");", ct).ConfigureAwait(false);
+
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE TABLE IF NOT EXISTS \"PlanningEntries\" (" +
+            "\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_PlanningEntries\" PRIMARY KEY AUTOINCREMENT, " +
+            "\"EventProfileId\" INTEGER NOT NULL, " +
+            "\"Kind\" INTEGER NOT NULL DEFAULT 0, " +
+            "\"Label\" TEXT NULL, " +
+            "\"Value\" TEXT NOT NULL, " +
+            "\"Position\" INTEGER NOT NULL DEFAULT 0, " +
+            "CONSTRAINT \"FK_PlanningEntries_EventProfiles_EventProfileId\" FOREIGN KEY (\"EventProfileId\") " +
+            "REFERENCES \"EventProfiles\" (\"Id\") ON DELETE CASCADE);", ct).ConfigureAwait(false);
+        await db.Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS \"IX_PlanningEntries_EventProfileId_Kind_Position\" " +
+            "ON \"PlanningEntries\" (\"EventProfileId\", \"Kind\", \"Position\");", ct).ConfigureAwait(false);
     }
 
     private static async Task BaselineLegacyDatabaseAsync(WeddingMusicContext db, CancellationToken ct)

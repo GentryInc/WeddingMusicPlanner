@@ -1,0 +1,36 @@
+﻿namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Stores and retrieves user-configurable application settings (API keys, etc.)
+/// Persisted to disk so settings survive app restarts.
+/// </summary>
+public interface ISettingsService
+{
+    /// <summary>YouTube Data API v3 key</summary>
+    string? YouTubeApiKey { get; set; }
+
+    /// <summary>Spotify Client ID</summary>
+    string? SpotifyClientId { get; set; }
+
+    /// <summary>Spotify Client Secret</summary>
+    string? SpotifyClientSecret { get; set; }
+
+    /// <summary>
+    /// When true, the app attempts UPnP port forwarding on the router so guests
+    /// outside the venue network can reach the request page, and the QR code
+    /// uses the public URL when forwarding succeeds.
+    /// </summary>
+    bool EnablePublicRequests { get; set; }
+
+    /// <summary>
+    /// VIP password for the bride: requests submitted with it are marked priority
+    /// and auto-approved. Null/empty disables the feature.
+    /// </summary>
+    string? BridePassword { get; set; }
+
+    /// <summary>Saves all settings to disk</summary>
+    void Save();
+
+    /// <summary>Loads settings from disk (called on startup)</summary>
+    void Load();
+}

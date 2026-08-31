@@ -32,9 +32,12 @@ public sealed class SpotifySearchService : ISearchService, IDisposable
         var client = await GetClientAsync(ct).ConfigureAwait(false);
         await _rateLimiter.WaitAsync(ct).ConfigureAwait(false);
 
+        // NOTE: Spotify development-mode apps now reject search limits above 10
+        // with HTTP 400 "Invalid limit" (verified against the live API), even
+        // though the documented maximum is 50. Clamp to the working range.
         var request = new SearchRequest(SearchRequest.Types.Track, BuildQuery(query))
         {
-            Limit = Math.Clamp(query.Limit, 1, 50)
+            Limit = Math.Clamp(query.Limit, 1, 10)
         };
 
         var response = await client.Search.Item(request, ct).ConfigureAwait(false);

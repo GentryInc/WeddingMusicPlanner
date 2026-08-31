@@ -1,0 +1,36 @@
+﻿using WeddingMusicData.Models;
+
+namespace WeddingMusicPlannerPro.Wpf.ViewModels;
+
+/// <summary>Read-only row in the DJ's guest-requests panel.</summary>
+public sealed class SongRequestViewModel
+{
+    public SongRequestViewModel(SongRequest request)
+    {
+        RequestId = request.Id;
+        TrackId = request.TrackId;
+        Title = request.Track?.Title ?? "(unknown track)";
+        Artist = request.Track?.Artist ?? "Unknown Artist";
+        GuestName = string.IsNullOrWhiteSpace(request.GuestName) ? "Anonymous" : request.GuestName!;
+        RequestedLocal = request.RequestedUtc.ToLocalTime().ToString("HH:mm");
+        IsPriority = request.IsPriority;
+        TipCents = request.TipCents;
+    }
+
+    public int RequestId { get; }
+    public int TrackId { get; }
+    public string Title { get; }
+    public string Artist { get; }
+    public string GuestName { get; }
+    public string RequestedLocal { get; }
+    public bool IsPriority { get; }
+    public int TipCents { get; }
+
+    public bool HasTip => TipCents > 0;
+    public string TipDisplay => $"${TipCents / 100m:0.00} tip";
+
+    public string Display => $"{Title} — {Artist}";
+    public string SubDisplay => HasTip
+        ? $"by {GuestName} at {RequestedLocal} · tipped ${TipCents / 100m:0.00}"
+        : $"by {GuestName} at {RequestedLocal}";
+}

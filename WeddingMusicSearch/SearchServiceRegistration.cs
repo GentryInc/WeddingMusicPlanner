@@ -71,30 +71,50 @@ public static class SearchServiceRegistration
 
     /// <summary>
     /// Exponential backoff with jitter; also honours HTTP 429 Retry-After and
-    /// retries on transient 5xx/408/socket errors.
+    /// retries on transient 5xx/408/socket errors. The retry count and median are
+    /// kept modest so the total back-off budget stays well inside the aggregate's
+    /// per-source timeout, preventing a slow provider (e.g. YouTube) from being
+    /// cancelled mid-retry and reported as "Timed out".
     /// </summary>
     private static IAsyncPolicy<HttpResponseMessage> BuildRetryPolicy()
     {
         var delay = Backoff.DecorrelatedJitterBackoffV2(
-            medianFirstRetryDelay: TimeSpan.FromMilliseconds(500), retryCount: 4);
+            medianFirstRetryDelay: TimeSpan.FromMilliseconds(400), retryCount: 3);
 
         return HttpPolicyExtensions
             .HandleTransientHttpError()
             .OrResult(r => r.StatusCode == HttpStatusCode.TooManyRequests)
             .WaitAndRetryAsync(delay, onRetryAsync: (outcome, timespan, _, _) =>
             {
-                // Respect an explicit Retry-After header if the API provided one.
+                // Respect an explicit Retry-After header if the API provided one,
+                // but cap the extra wait so a large server-supplied delay can't
+                // exceed the per-source timeout and turn into a spurious cancel.
                 var retryAfter = outcome.Result?.Headers.RetryAfter?.Delta;
                 if (retryAfter is { } ra && ra > timespan)
-                    return Task.Delay(ra - timespan);
+                {
+                    var extra = ra - timespan;
+                    if (extra > TimeSpan.FromSeconds(4))
+                        extra = TimeSpan.FromSeconds(4);
+                    return Task.Delay(extra);
+                }
                 return Task.CompletedTask;
             });
     }
 
+    /// <summary>
+    /// Opens only on genuine outages (transient 5xx/408/socket errors). HTTP 429
+    /// (rate limiting) is deliberately NOT treated as a breaking failure: it is
+    /// expected throttling that the retry policy above already handles with
+    /// Retry-After back-off, so a burst of guest requests must not open the circuit
+    /// and lock everyone out. Uses a failure-ratio breaker so a couple of stray
+    /// errors amid healthy traffic won't trip it, and recovers quickly.
+    /// </summary>
     private static IAsyncPolicy<HttpResponseMessage> BuildCircuitBreakerPolicy() =>
         HttpPolicyExtensions
             .HandleTransientHttpError()
-            .OrResult(r => r.StatusCode == HttpStatusCode.TooManyRequests)
-            .CircuitBreakerAsync(handledEventsAllowedBeforeBreaking: 5,
-                                 durationOfBreak: TimeSpan.FromSeconds(30));
+            .AdvancedCircuitBreakerAsync(
+                failureThreshold: 0.75,                          // 75% of calls must fail
+                samplingDuration: TimeSpan.FromSeconds(30),      // ...within this window
+                minimumThroughput: 8,                            // and only after 8+ calls
+                durationOfBreak: TimeSpan.FromSeconds(10));      // recover fast (half-open trial)
 }

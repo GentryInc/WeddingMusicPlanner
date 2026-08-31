@@ -1,7 +1,160 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\corwy\\source\\repos\\WeddingMusicPlanner\\",
-  "Documents": [],
+  "WorkspaceRootPath": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingaudioengine\\limitersampleprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|solutionrelative:weddingaudioengine\\limitersampleprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\databaseinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\databaseinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\weddingmusiccontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\weddingmusiccontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\models\\eventprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\models\\eventprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\models\\track.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\models\\track.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\playlistexportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\playlistexportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\views\\settingswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\views\\settingswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\views\\qrcodewindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\views\\qrcodewindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\themes\\darkhighcontrast.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\themes\\darkhighcontrast.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\views\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\views\\qrcodewindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\views\\qrcodewindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingaudioengine\\microphoneinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|solutionrelative:weddingaudioengine\\microphoneinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\views\\settingswindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\views\\settingswindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicsearch\\providers\\spotifysearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|solutionrelative:weddingmusicsearch\\providers\\spotifysearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\viewmodels\\songrequestviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\viewmodels\\songrequestviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\songrequestservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\songrequestservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\tippaymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\tippaymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\models\\songrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\models\\songrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\playbackservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\playbackservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\requestwebserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\requestwebserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\viewmodels\\settingsviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\viewmodels\\settingsviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\settingsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\settingsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\isettingsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\isettingsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\viewmodels\\micdeviceviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\viewmodels\\micdeviceviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\portforwardingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\portforwardingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\weddingmusicplannerpro.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\weddingmusicplannerpro.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\caching\\offlinecacheservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\caching\\offlinecacheservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingaudioengine\\audiodeck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|solutionrelative:weddingaudioengine\\audiodeck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingaudioengine\\dualdeckaudioengine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|solutionrelative:weddingaudioengine\\dualdeckaudioengine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\viewmodels\\eventsegmentviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\viewmodels\\eventsegmentviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicsearch\\searchserviceregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|solutionrelative:weddingmusicsearch\\searchserviceregistration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicsearch\\aggregatesearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|solutionrelative:weddingmusicsearch\\aggregatesearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\_ytdiag\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:_ytdiag\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicsearch\\providers\\youtubemusicsearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E1A433A-795D-433C-4ADD-486B724CE1EF}|WeddingMusicSearch\\WeddingMusicSearch.csproj|solutionrelative:weddingmusicsearch\\providers\\youtubemusicsearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicdata\\models\\playhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EE4FF8F1-A2B0-7DE4-5F6A-A9EB7D70D4D0}|WeddingMusicData\\WeddingMusicData.csproj|solutionrelative:weddingmusicdata\\models\\playhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\downloads\\weddingmusicplanner-main\\weddingmusicplannerpro.wpf\\services\\playhistoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\playhistoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +162,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -18,6 +171,496 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "WeddingMusicContext.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\WeddingMusicContext.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\WeddingMusicContext.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\WeddingMusicContext.cs",
+              "RelativeToolTip": "WeddingMusicData\\WeddingMusicContext.cs",
+              "ViewState": "AgIAAH0AAAAAAAAAAAAUwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:36:07.766Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Track.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\Track.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\Models\\Track.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\Track.cs",
+              "RelativeToolTip": "WeddingMusicData\\Models\\Track.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T13:11:56.601Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PlaylistExportService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PlaylistExportService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PlaylistExportService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PlaylistExportService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\PlaylistExportService.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAowNwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T21:50:47.383Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "LimiterSampleProvider.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\LimiterSampleProvider.cs",
+              "RelativeDocumentMoniker": "WeddingAudioEngine\\LimiterSampleProvider.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\LimiterSampleProvider.cs",
+              "RelativeToolTip": "WeddingAudioEngine\\LimiterSampleProvider.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T17:27:28.515Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DatabaseInitializer.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\DatabaseInitializer.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\DatabaseInitializer.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\DatabaseInitializer.cs",
+              "RelativeToolTip": "WeddingMusicData\\DatabaseInitializer.cs",
+              "ViewState": "AgIAAHEAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:37:37.064Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "EventProfile.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\EventProfile.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\Models\\EventProfile.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\EventProfile.cs",
+              "RelativeToolTip": "WeddingMusicData\\Models\\EventProfile.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T14:02:27.434Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "PlayHistoryService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PlayHistoryService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PlayHistoryService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PlayHistoryService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\PlayHistoryService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T21:48:01.946Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "PlayHistory.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\PlayHistory.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\Models\\PlayHistory.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\PlayHistory.cs",
+              "RelativeToolTip": "WeddingMusicData\\Models\\PlayHistory.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T21:40:51.356Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "YouTubeMusicSearchService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\Providers\\YouTubeMusicSearchService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicSearch\\Providers\\YouTubeMusicSearchService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\Providers\\YouTubeMusicSearchService.cs",
+              "RelativeToolTip": "WeddingMusicSearch\\Providers\\YouTubeMusicSearchService.cs",
+              "ViewState": "AgIAAEAAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T20:16:18.745Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "QrCodeWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml.cs",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAswDwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:41:56.535Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\_ytdiag\\Program.cs",
+              "RelativeDocumentMoniker": "_ytdiag\\Program.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\_ytdiag\\Program.cs",
+              "RelativeToolTip": "_ytdiag\\Program.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAIBJwB8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T19:19:57.363Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "AggregateSearchService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\AggregateSearchService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicSearch\\AggregateSearchService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\AggregateSearchService.cs",
+              "RelativeToolTip": "WeddingMusicSearch\\AggregateSearchService.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T19:06:38.241Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "SearchServiceRegistration.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\SearchServiceRegistration.cs",
+              "RelativeDocumentMoniker": "WeddingMusicSearch\\SearchServiceRegistration.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\SearchServiceRegistration.cs",
+              "RelativeToolTip": "WeddingMusicSearch\\SearchServiceRegistration.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T16:17:08.312Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "DarkHighContrast.xaml",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-30T14:29:28.949Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "DualDeckAudioEngine.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\DualDeckAudioEngine.cs",
+              "RelativeDocumentMoniker": "WeddingAudioEngine\\DualDeckAudioEngine.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\DualDeckAudioEngine.cs",
+              "RelativeToolTip": "WeddingAudioEngine\\DualDeckAudioEngine.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAEBUwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T14:03:39.877Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "AudioDeck.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\AudioDeck.cs",
+              "RelativeDocumentMoniker": "WeddingAudioEngine\\AudioDeck.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\AudioDeck.cs",
+              "RelativeToolTip": "WeddingAudioEngine\\AudioDeck.cs",
+              "ViewState": "AgIAAGMAAAAAAAAAAIBQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T14:01:17.213Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "QrCodeWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-30T03:41:41.124Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "EventSegmentViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\EventSegmentViewModel.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\EventSegmentViewModel.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\EventSegmentViewModel.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\ViewModels\\EventSegmentViewModel.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAIBIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T14:22:25.003Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "MicrophoneInput.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\MicrophoneInput.cs",
+              "RelativeDocumentMoniker": "WeddingAudioEngine\\MicrophoneInput.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingAudioEngine\\MicrophoneInput.cs",
+              "RelativeToolTip": "WeddingAudioEngine\\MicrophoneInput.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAG0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T05:48:54.977Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SettingsWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAADgvwkAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T04:44:17.006Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "SpotifySearchService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\Providers\\SpotifySearchService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicSearch\\Providers\\SpotifySearchService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicSearch\\Providers\\SpotifySearchService.cs",
+              "RelativeToolTip": "WeddingMusicSearch\\Providers\\SpotifySearchService.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAcwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T04:37:52.611Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "SongRequestViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\SongRequestViewModel.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\SongRequestViewModel.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\SongRequestViewModel.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\ViewModels\\SongRequestViewModel.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAcwCQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:42:20.475Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "SongRequestService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\SongRequestService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\SongRequestService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\SongRequestService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\SongRequestService.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAvwJUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:53:34.036Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "TipPaymentService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\TipPaymentService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\TipPaymentService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\TipPaymentService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\TipPaymentService.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAUwAABAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T05:38:15.402Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\App.xaml.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\App.xaml.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\App.xaml.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\App.xaml.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAmwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T04:44:39.535Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\MainWindow.xaml",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Views\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-29T04:46:31.12Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "MainViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\MainViewModel.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\MainViewModel.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\MainViewModel.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\ViewModels\\MainViewModel.cs",
+              "ViewState": "AgIAAIgDAAAAAAAAAAAmwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T04:45:40.376Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "SongRequest.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\SongRequest.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\Models\\SongRequest.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Models\\SongRequest.cs",
+              "RelativeToolTip": "WeddingMusicData\\Models\\SongRequest.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAcwCwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:35:37.562Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "PlaybackService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PlaybackService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PlaybackService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PlaybackService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\PlaybackService.cs",
+              "ViewState": "AgIAALUAAAAAAAAAAADgv+oAAABDAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T05:24:04.361Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "RequestWebServer.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\RequestWebServer.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\RequestWebServer.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\RequestWebServer.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\RequestWebServer.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAAcwEwCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T03:40:53.292Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SettingsWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-29T04:43:55.029Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "SettingsViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\SettingsViewModel.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\SettingsViewModel.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\SettingsViewModel.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\ViewModels\\SettingsViewModel.cs",
+              "ViewState": "AgIAAIgAAAAAAAAAAAAUwKAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T04:43:25.965Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "SettingsService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\SettingsService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\SettingsService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\SettingsService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\SettingsService.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAgwIIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T04:43:14.123Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "ISettingsService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\ISettingsService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\ISettingsService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\ISettingsService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\ISettingsService.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAArwDkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T04:42:55.79Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "MicDeviceViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\MicDeviceViewModel.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\MicDeviceViewModel.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\ViewModels\\MicDeviceViewModel.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\ViewModels\\MicDeviceViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T05:56:13.343Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "PortForwardingService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PortForwardingService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PortForwardingService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\Services\\PortForwardingService.cs",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Services\\PortForwardingService.cs",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAYwAYCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-30T04:07:32.003Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "WeddingMusicPlannerPro.Wpf",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+              "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+              "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAewAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-30T03:38:14.814Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "OfflineCacheService.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Caching\\OfflineCacheService.cs",
+              "RelativeDocumentMoniker": "WeddingMusicData\\Caching\\OfflineCacheService.cs",
+              "ToolTip": "C:\\Users\\corwy\\Downloads\\WeddingMusicPlanner-main\\WeddingMusicData\\Caching\\OfflineCacheService.cs",
+              "RelativeToolTip": "WeddingMusicData\\Caching\\OfflineCacheService.cs",
+              "ViewState": "AgIAAKgAAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-29T05:24:17.457Z",
+              "EditorCaption": ""
             }
           ]
         }

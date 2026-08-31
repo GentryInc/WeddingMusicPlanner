@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingMusicSearch")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e842e2d6ab2f46e42f53683e62a05875646c13be")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f7cef6a394bb7ed0e563b8757d378978c7e419f5")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingMusicSearch")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingMusicSearch")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingMusicPlannerPro.Wpf\obj\Debug\net8.0-windows\
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicPlannerPro.Wpf\obj\Debug\net8.0-windows\
 WeddingMusicPlannerPro.Wpf
 none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
-C:\Users\corwy\source\repos\WeddingMusicPlanner\WeddingMusicPlannerPro.Wpf\App.xaml
-31611779933
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingMusicPlannerPro.Wpf\App.xaml
+5-845821469
 
-23-441440607
-265-125003733
-Themes\DarkHighContrast.xaml;Views\MainWindow.xaml;Views\TrackEditorWindow.xaml;
+362067016316
+372-1202934980
+Themes\DarkHighContrast.xaml;Views\MainWindow.xaml;Views\QrCodeWindow.xaml;Views\SettingsWindow.xaml;Views\TrackEditorWindow.xaml;
 
 False
 

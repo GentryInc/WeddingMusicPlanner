@@ -1,0 +1,181 @@
+<Window x:Class="WeddingMusicPlannerPro.Wpf.Views.TrackEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Song Properties"
+        Width="520" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}"
+        Foreground="{StaticResource ForegroundBrush}"
+        TextElement.Foreground="{StaticResource ForegroundBrush}"
+        ShowInTaskbar="False" ResizeMode="NoResize">
+    <Window.Resources>
+        <Style TargetType="TextBlock" x:Key="FieldLabel">
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,0,10,6"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Padding" Value="4,2"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding HeaderText}" FontSize="18" FontWeight="Bold"
+                   Margin="0,0,0,12"/>
+
+        <!-- ===== Metadata ===== -->
+        <GroupBox Grid.Row="1" Header="Song Details" Padding="8" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Title" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                           Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                           AutomationProperties.Name="Song title"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Artist" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="1" Grid.Column="1" Text="{Binding Artist}"
+                           AutomationProperties.Name="Artist"/>
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="Album" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="1" Grid.Column="3" Text="{Binding Album}"
+                           AutomationProperties.Name="Album"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Genre" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding Genre}"
+                           AutomationProperties.Name="Genre"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Mood" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="2" Grid.Column="3" Text="{Binding Mood}"
+                           AutomationProperties.Name="Mood or vibe"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Year" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="3" Grid.Column="1" Text="{Binding Year, TargetNullValue=''}"
+                           AutomationProperties.Name="Year"/>
+                <TextBlock Grid.Row="3" Grid.Column="2" Text="Track #" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="3" Grid.Column="3" Text="{Binding TrackNumber, TargetNullValue=''}"
+                           AutomationProperties.Name="Track number"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="BPM" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="4" Grid.Column="1" Text="{Binding Bpm, TargetNullValue=''}"
+                           AutomationProperties.Name="Beats per minute"/>
+                <TextBlock Grid.Row="4" Grid.Column="2" Text="Key" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="4" Grid.Column="3" Text="{Binding MusicalKey}"
+                           AutomationProperties.Name="Musical key"/>
+
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="Energy (0-1)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="5" Grid.Column="1" Text="{Binding Energy, TargetNullValue=''}"
+                           AutomationProperties.Name="Energy from 0 to 1"/>
+                <TextBlock Grid.Row="5" Grid.Column="2" Text="Dance (0-1)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="5" Grid.Column="3" Text="{Binding Danceability, TargetNullValue=''}"
+                           AutomationProperties.Name="Danceability from 0 to 1"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- ===== Cue / fade ===== -->
+        <GroupBox Grid.Row="2" Header="Playback &amp; Fade" Padding="8" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Start at (m:ss)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="0" Grid.Column="1"
+                           Text="{Binding StartAt, UpdateSourceTrigger=PropertyChanged}"
+                           ToolTip="Intro skip point. Blank starts at the beginning."
+                           AutomationProperties.Name="Start at, minutes and seconds"/>
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="Length" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding DurationDisplay}"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fade out at (m:ss)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="1" Grid.Column="1"
+                           Text="{Binding FadeOutAt, UpdateSourceTrigger=PropertyChanged}"
+                           ToolTip="When the fade-out should finish, e.g. 3:10. Blank plays to the end."
+                           AutomationProperties.Name="Fade out at, minutes and seconds"/>
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="Fade-out (sec)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="1" Grid.Column="3" Text="{Binding FadeOutSeconds}"
+                           AutomationProperties.Name="Fade out duration in seconds"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fade-in (sec)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding FadeInSeconds}"
+                           AutomationProperties.Name="Fade in duration in seconds"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Gain trim (dB)" Style="{StaticResource FieldLabel}"/>
+                <TextBox   Grid.Row="2" Grid.Column="3" Text="{Binding GainTrimDb}"
+                           AutomationProperties.Name="Gain trim in decibels"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Fade-in curve" Style="{StaticResource FieldLabel}"/>
+                <ComboBox  Grid.Row="3" Grid.Column="1" ItemsSource="{Binding FadeCurves}"
+                           SelectedItem="{Binding FadeInCurve}"
+                           AutomationProperties.Name="Fade in curve"/>
+                <TextBlock Grid.Row="3" Grid.Column="2" Text="Fade-out curve" Style="{StaticResource FieldLabel}"/>
+                <ComboBox  Grid.Row="3" Grid.Column="3" ItemsSource="{Binding FadeCurves}"
+                           SelectedItem="{Binding FadeOutCurve}"
+                           AutomationProperties.Name="Fade out curve"/>
+            </Grid>
+        </GroupBox>
+
+        <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="#FFB74D"
+                   TextWrapping="Wrap" Margin="0,0,0,8">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Save" Width="90" Margin="0,0,8,0" IsDefault="True"
+                    Command="{Binding SaveCommand}"
+                    AutomationProperties.Name="Save song properties"/>
+            <Button Content="Cancel" Width="90" IsCancel="True"
+                    Command="{Binding CancelCommand}"
+                    AutomationProperties.Name="Cancel"/>
+        </StackPanel>
+    </Grid>
+</Window>

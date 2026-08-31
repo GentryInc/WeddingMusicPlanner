@@ -1,0 +1,60 @@
+using System.IO;
+using System.Windows;
+using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using QRCoder;
+
+namespace WeddingMusicPlannerPro.Wpf.Views;
+
+/// <summary>
+/// Displays the guest request URL as a QR code and lets the DJ export it as a
+/// PNG for printing (e.g. table cards).
+/// </summary>
+public partial class QrCodeWindow : Window
+{
+    private readonly byte[] _pngBytes;
+
+    public QrCodeWindow(string requestUrl, bool isPublic = false)
+    {
+        InitializeComponent();
+
+        using var generator = new QRCodeGenerator();
+        using var data = generator.CreateQrCode(requestUrl, QRCodeGenerator.ECCLevel.Q);
+        _pngBytes = new PngByteQRCode(data).GetGraphic(pixelsPerModule: 12);
+
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        bitmap.StreamSource = new MemoryStream(_pngBytes);
+        bitmap.EndInit();
+        bitmap.Freeze();
+
+        QrImage.Source = bitmap;
+        UrlText.Text = requestUrl;
+        NetworkNote.Text = isPublic
+            ? "Public link — works from any network (mobile data included)."
+            : "Guests must be on the same Wi-Fi network.";
+    }
+
+    private void OnSavePng(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = "Save QR code",
+            FileName = "song-request-qr.png",
+            Filter = "PNG image (*.png)|*.png"
+        };
+        if (dialog.ShowDialog(this) != true)
+            return;
+
+        try
+        {
+            File.WriteAllBytes(dialog.FileName, _pngBytes);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Could not save the QR code: {ex.Message}",
+                "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+}

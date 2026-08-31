@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using WeddingMusicData.Models;
 using WeddingMusicPlannerPro.Wpf.Services;
+using WeddingMusicPlannerPro.Wpf.Views;
 using WeddingMusicSearch.Abstractions;
 
 namespace WeddingMusicPlannerPro.Wpf.ViewModels;
@@ -21,17 +22,29 @@ public partial class MainViewModel : ObservableObject
     private readonly IPlaybackService _playback;
     private readonly IImportService _import;
     private readonly IStreamingCacheRefresher _cacheRefresher;
+    private readonly ISongRequestService _songRequests;
+    private readonly IRequestWebServer _requestServer;
+    private readonly IPortForwardingService _portForwarding;
+    private readonly ISettingsService _settings;
+    private readonly IPlayHistoryService _playHistory;
+    private readonly Func<SettingsWindow> _settingsWindowFactory;
 
     // Tracks what is currently on the master deck so we can auto-advance.
     private EventSegmentViewModel? _currentSegment;
     private TrackViewModel? _currentTrack;
 
-    public MainViewModel(ILibraryService library, IPlaybackService playback, IImportService import, IStreamingCacheRefresher cacheRefresher, SearchViewModel search)
+    public MainViewModel(ILibraryService library, IPlaybackService playback, IImportService import, IStreamingCacheRefresher cacheRefresher, ISongRequestService songRequests, IRequestWebServer requestServer, IPortForwardingService portForwarding, ISettingsService settings, IPlayHistoryService playHistory, SearchViewModel search, Func<SettingsWindow> settingsWindowFactory)
     {
         _library = library;
         _playback = playback;
         _import = import;
         _cacheRefresher = cacheRefresher;
+        _songRequests = songRequests;
+        _requestServer = requestServer;
+        _portForwarding = portForwarding;
+        _settings = settings;
+        _playHistory = playHistory;
+        _settingsWindowFactory = settingsWindowFactory;
         Search = search;
         Search.AddRequested += async (_, hit) =>
         {
@@ -39,12 +52,33 @@ public partial class MainViewModel : ObservableObject
                 await d.InvokeAsync(async () => await AddSearchHitAsync(hit).ConfigureAwait(true));
         };
         _playback.StateChanged += (_, _) => Application.Current?.Dispatcher.Invoke(OnPlaybackStateChanged);
+        _playback.MicLiveChanged += (_, _) => Application.Current?.Dispatcher.Invoke(() =>
+        {
+            OnPropertyChanged(nameof(IsMicLive));
+            OnPropertyChanged(nameof(MasterVolume));
+        });
         _playback.MasterTrackCompleted += (_, reason) =>
             Application.Current?.Dispatcher.Invoke(() => OnMasterTrackCompleted(reason));
+
+        // Live waveform for the lockout screen: roll the newest peak level into a
+        // fixed-size buffer and re-render as polyline points (~20 updates/sec).
+        _playback.MasterLevelMeasured += (_, level) =>
+            Application.Current?.Dispatcher.BeginInvoke(() => PushWaveformLevel(level));
+
+        // Bride's VIP "skip to next song" from the request page: reuse the emergency
+        // fade path, which always fades out gracefully and auto-advances.
+        _requestServer.SkipRequested += (_, _) =>
+            Application.Current?.Dispatcher.InvokeAsync(async () =>
+            {
+                StatusMessage = "VIP skip requested \u2014 fading to next song\u2026";
+                await _playback.EmergencyFadeAsync().ConfigureAwait(true);
+            });
 
         // Playhead poll runs for the app lifetime; position/duration read as zero when
         // idle, so this stays cheap and needs no start/stop coupling to transport state.
         StartPlayheadTimer();
+        StartRequestPolling();
+        RefreshMicDevices();
     }
 
     public ObservableCollection<EventSegmentViewModel> Segments { get; } = new();
@@ -56,6 +90,70 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private EventSegmentViewModel? _selectedSegment;
     [ObservableProperty] private string? _nowPlaying;
     [ObservableProperty] private string _statusMessage = "Ready";
+
+    // --- DJ microphone (talkover) --------------------------------------------
+
+    // --- Lockout waveform: scrolling peak-level history rendered as a polyline ---
+
+    private const int WaveformSamples = 120;
+    private const double WaveformWidth = 480;
+    private const double WaveformHeight = 80;
+    private readonly float[] _waveformLevels = new float[WaveformSamples];
+
+    /// <summary>Polyline points for the lockout-screen waveform (newest sample on the right).</summary>
+    [ObservableProperty] private System.Windows.Media.PointCollection _waveformPoints = new();
+
+    private void PushWaveformLevel(float level)
+    {
+        // Only spend cycles building geometry while the lockout overlay shows it.
+        Array.Copy(_waveformLevels, 1, _waveformLevels, 0, WaveformSamples - 1);
+        _waveformLevels[WaveformSamples - 1] = Math.Clamp(level, 0f, 1f);
+        if (!IsLockoutEnabled) return;
+
+        var pts = new System.Windows.Media.PointCollection();
+        double midY = WaveformHeight / 2;
+        for (int i = 0; i < WaveformSamples; i++)
+        {
+            double x = i * WaveformWidth / (WaveformSamples - 1);
+            // Mirror around the vertical centre for a classic waveform look.
+            double amp = _waveformLevels[i] * midY;
+            pts.Add(new System.Windows.Point(x, midY - ((i & 1) == 0 ? amp : -amp)));
+        }
+        pts.Freeze();
+        WaveformPoints = pts;
+    }
+
+    /// <summary>Available capture devices for the mic picker.</summary>
+    public ObservableCollection<MicDeviceViewModel> MicDevices { get; } = new();
+
+    [ObservableProperty] private MicDeviceViewModel? _selectedMicDevice;
+
+    /// <summary>True while the DJ mic is live; music ducks automatically.</summary>
+    public bool IsMicLive => _playback.IsMicLive;
+
+    /// <summary>
+    /// Toggles the DJ microphone on/off. While live the mic plays through the
+    /// speakers and the music is ducked; toggling off restores the volume.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleMic()
+    {
+        var error = _playback.ToggleMicrophone(SelectedMicDevice?.Id);
+        OnPropertyChanged(nameof(IsMicLive));
+        OnPropertyChanged(nameof(MasterVolume));
+        StatusMessage = error ?? (IsMicLive ? "Mic live \u2014 music ducked" : "Mic off \u2014 music restored");
+    }
+
+    /// <summary>Refreshes the list of microphone capture devices.</summary>
+    [RelayCommand]
+    private void RefreshMicDevices()
+    {
+        var selectedId = SelectedMicDevice?.Id;
+        MicDevices.Clear();
+        foreach (var (id, name) in _playback.GetMicrophoneDevices())
+            MicDevices.Add(new MicDeviceViewModel(id, name));
+        SelectedMicDevice = MicDevices.FirstOrDefault(d => d.Id == selectedId) ?? MicDevices.FirstOrDefault();
+    }
 
     // --- Music controls: volume + read-only playhead -------------------------
 
@@ -413,11 +511,25 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadAsync()
     {
-        Segments.Clear();
-        var sections = await _library.GetSectionsWithTracksAsync().ConfigureAwait(true);
-        foreach (var section in sections)
-            Segments.Add(new EventSegmentViewModel(section));
-        ResolveNextSectionNames();
+        // Capture selections before Clear(): clearing the collection makes the bound
+        // ComboBox/list push null into RequestTargetSegment/SelectedSegment, which
+        // would otherwise overwrite the persisted target with null.
+        var selectedSectionId = SelectedSegment?.SectionId;
+        _suppressRequestTargetSave = true;
+        try
+        {
+            Segments.Clear();
+            var sections = await _library.GetSectionsWithTracksAsync().ConfigureAwait(true);
+            foreach (var section in sections)
+                Segments.Add(new EventSegmentViewModel(section));
+            ResolveNextSectionNames();
+            RestoreRequestTargetSelection();
+            RestoreSelectedSegment(selectedSectionId);
+        }
+        finally
+        {
+            _suppressRequestTargetSave = false;
+        }
         StatusMessage = $"Loaded {Segments.Count} segments";
 
         // Age out reference-only streaming metadata in the background. A slow network
@@ -433,11 +545,22 @@ public partial class MainViewModel : ObservableObject
             int refreshed = await _cacheRefresher.RefreshStaleAsync().ConfigureAwait(true);
             if (refreshed > 0)
             {
-                var sections = await _library.GetSectionsWithTracksAsync().ConfigureAwait(true);
-                Segments.Clear();
-                foreach (var section in sections)
-                    Segments.Add(new EventSegmentViewModel(section));
-                ResolveNextSectionNames();
+                var selectedSectionId = SelectedSegment?.SectionId;
+                _suppressRequestTargetSave = true;
+                try
+                {
+                    var sections = await _library.GetSectionsWithTracksAsync().ConfigureAwait(true);
+                    Segments.Clear();
+                    foreach (var section in sections)
+                        Segments.Add(new EventSegmentViewModel(section));
+                    ResolveNextSectionNames();
+                    RestoreRequestTargetSelection();
+                    RestoreSelectedSegment(selectedSectionId);
+                }
+                finally
+                {
+                    _suppressRequestTargetSave = false;
+                }
                 StatusMessage = $"Refreshed {refreshed} streaming track(s)";
             }
         }
@@ -484,6 +607,234 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Opens the Settings dialog where users can configure YouTube and Spotify API keys.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(NotLocked))]
+    private void OpenSettings()
+    {
+        var settingsWindow = _settingsWindowFactory();
+        settingsWindow.Owner = Application.Current.MainWindow;
+        settingsWindow.ShowDialog();
+    }
+
+    // --- Guest song requests (QR code / LAN page) -----------------------------
+
+    public ObservableCollection<SongRequestViewModel> PendingRequests { get; } = new();
+
+    // TrackId -> priority rank (tip cents; VIP = int.MaxValue) for tracks inserted
+    // at the front of the queue this session, so later tips slot in by amount.
+    private readonly Dictionary<int, int> _queuedPriorityRank = new();
+
+    /// <summary>
+    /// Playlist that approved guest requests are added to by default. Null means
+    /// "use the currently selected (or first) playlist". Persisted across restarts.
+    /// </summary>
+    [ObservableProperty] private EventSegmentViewModel? _requestTargetSegment;
+
+    partial void OnRequestTargetSegmentChanged(EventSegmentViewModel? value)
+    {
+        if (_suppressRequestTargetSave) return;
+        _settings.RequestTargetSectionId = value?.SectionId;
+        _settings.Save();
+    }
+
+    private bool _suppressRequestTargetSave;
+
+    /// <summary>Re-selects the previously focused playlist after Segments reloads.</summary>
+    private void RestoreSelectedSegment(int? sectionId)
+    {
+        SelectedSegment = sectionId is { } id
+            ? Segments.FirstOrDefault(s => s.SectionId == id)
+            : null;
+    }
+
+    /// <summary>Marks the clicked playlist as the focused target for added songs.</summary>
+    [RelayCommand]
+    private void SelectSegment(EventSegmentViewModel? segment)
+    {
+        SelectedSegment = segment;
+        if (segment is not null)
+            StatusMessage = $"Focused playlist: {segment.Name} \u2014 added songs go here";
+    }
+
+    partial void OnSelectedSegmentChanged(EventSegmentViewModel? oldValue, EventSegmentViewModel? newValue)
+    {
+        if (oldValue is not null) oldValue.IsSelected = false;
+        if (newValue is not null) newValue.IsSelected = true;
+    }
+
+    /// <summary>Re-selects the persisted request target after Segments reloads.</summary>
+    private void RestoreRequestTargetSelection()
+    {
+        _suppressRequestTargetSave = true;
+        try
+        {
+            RequestTargetSegment = _settings.RequestTargetSectionId is { } id
+                ? Segments.FirstOrDefault(s => s.SectionId == id)
+                : null;
+        }
+        finally
+        {
+            _suppressRequestTargetSave = false;
+        }
+    }
+
+    /// <summary>Header for the requests panel, including a live count.</summary>
+    public string RequestsHeader => PendingRequests.Count > 0
+        ? $"Guest Requests ({PendingRequests.Count})"
+        : "Guest Requests";
+
+    private readonly System.Windows.Threading.DispatcherTimer _requestPollTimer =
+        new() { Interval = TimeSpan.FromSeconds(5) };
+
+    private void StartRequestPolling()
+    {
+        _requestPollTimer.Tick += async (_, _) => await RefreshRequestsAsync().ConfigureAwait(true);
+        _requestPollTimer.Start();
+    }
+
+    private async Task RefreshRequestsAsync()
+    {
+        try
+        {
+            var pending = await _songRequests.GetPendingRequestsAsync().ConfigureAwait(true);
+
+            // VIP (bride) and paid-tip requests skip the queue entirely: approve them
+            // through the same path the Approve button uses, then drop them from the
+            // pending set. Lockout Mode pauses auto-approval too.
+            var autoApprove = pending.Where(r => r.IsPriority || r.TipCents > 0).ToList();
+            if (autoApprove.Count > 0 && NotLocked)
+            {
+                foreach (var request in autoApprove)
+                    await ApproveRequestAsync(new SongRequestViewModel(request)).ConfigureAwait(true);
+                pending = pending.Where(r => !r.IsPriority && r.TipCents == 0).ToList();
+            }
+
+            // Only touch the collection when the set actually changed, so approve/reject
+            // button clicks aren't disturbed by items shifting under the cursor.
+            if (pending.Select(r => r.Id).SequenceEqual(PendingRequests.Select(r => r.RequestId)))
+                return;
+
+            PendingRequests.Clear();
+            foreach (var request in pending)
+                PendingRequests.Add(new SongRequestViewModel(request));
+            OnPropertyChanged(nameof(RequestsHeader));
+        }
+        catch (Exception)
+        {
+            // Polling must never break the operator UI; retry on the next tick.
+        }
+    }
+
+    /// <summary>Approves a request: adds the track to the default request playlist
+    /// (falling back to the selected or first segment).</summary>
+    [RelayCommand(CanExecute = nameof(NotLocked))]
+    private async Task ApproveRequestAsync(SongRequestViewModel? request)
+    {
+        if (request is null) return;
+        try
+        {
+            var segment = RequestTargetSegment ?? SelectedSegment ?? Segments.FirstOrDefault();
+            if (segment is null)
+            {
+                await _library.EnsureDefaultSectionAsync().ConfigureAwait(true);
+                await LoadAsync().ConfigureAwait(true);
+                segment = Segments.FirstOrDefault();
+                if (segment is null)
+                {
+                    StatusMessage = "Create a playlist before approving requests.";
+                    return;
+                }
+            }
+
+            await _library.AddTrackToSectionAsync(request.TrackId, segment.SectionId).ConfigureAwait(true);
+
+            // VIP and tipped requests jump the queue: insert right under the currently
+            // playing song. Among tipped tracks, higher tips sit higher — a new tip is
+            // placed below any earlier insert that paid the same or more, above lower ones.
+            if (request.IsPriority || request.TipCents > 0)
+            {
+                int position = 0;
+                if (_currentSegment is not null && _currentTrack is not null &&
+                    _currentSegment.SectionId == segment.SectionId)
+                {
+                    int idx = _currentSegment.Tracks.IndexOf(_currentTrack);
+                    if (idx >= 0) position = idx + 1;
+                }
+
+                // Skip past previously inserted priority tracks that outrank this one
+                // (VIP counts as infinite; ties keep first-paid-first-played order).
+                int myRank = request.IsPriority ? int.MaxValue : request.TipCents;
+                while (position < segment.Tracks.Count &&
+                       _queuedPriorityRank.TryGetValue(segment.Tracks[position].TrackId, out int rank) &&
+                       rank >= myRank)
+                {
+                    position++;
+                }
+
+                _queuedPriorityRank[request.TrackId] = myRank;
+                await _library.MoveTrackAsync(request.TrackId, segment.SectionId, segment.SectionId, position)
+                    .ConfigureAwait(true);
+            }
+
+            await _songRequests.ResolveRequestAsync(request.RequestId, approved: true).ConfigureAwait(true);
+            PendingRequests.Remove(request);
+            OnPropertyChanged(nameof(RequestsHeader));
+            await LoadAsync().ConfigureAwait(true);
+            StatusMessage = request.TipCents > 0
+                ? $"Tipped request (${request.TipCents / 100m:0.00}) auto-approved: '{request.Title}' queued by tip in {segment.Name}"
+                : request.IsPriority
+                    ? $"VIP request auto-approved: '{request.Title}' queued next in {segment.Name}"
+                    : $"Approved request: '{request.Title}' added to {segment.Name}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Approve failed: {ex.Message}";
+        }
+    }
+
+    /// <summary>Rejects a request without touching any playlist.</summary>
+    [RelayCommand(CanExecute = nameof(NotLocked))]
+    private async Task RejectRequestAsync(SongRequestViewModel? request)
+    {
+        if (request is null) return;
+        try
+        {
+            await _songRequests.ResolveRequestAsync(request.RequestId, approved: false).ConfigureAwait(true);
+            PendingRequests.Remove(request);
+            OnPropertyChanged(nameof(RequestsHeader));
+            StatusMessage = $"Rejected request: '{request.Title}'";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Reject failed: {ex.Message}";
+        }
+    }
+
+    /// <summary>Shows the QR code guests scan to open the request page.</summary>
+    [RelayCommand]
+    private void ShowRequestQr()
+    {
+        if (!_requestServer.IsRunning)
+        {
+            StatusMessage = "Request server is not running (port may be blocked or in use).";
+            return;
+        }
+
+        // Prefer the internet-reachable URL when UPnP forwarding is active
+        // (toggled in Settings); otherwise guests must be on the venue network.
+        var usePublic = _portForwarding.IsForwarded && _portForwarding.PublicUrl is not null;
+        var url = usePublic ? _portForwarding.PublicUrl! : _requestServer.RequestUrl;
+        StatusMessage = _portForwarding.Status;
+
+        var window = new QrCodeWindow(url, usePublic)
+        {
+            Owner = Application.Current.MainWindow
+        };
+        window.ShowDialog();
+    }
+
     [RelayCommand(CanExecute = nameof(NotLocked))]
     private async Task PlayAsync(TrackViewModel? track)
     {
@@ -508,6 +859,17 @@ public partial class MainViewModel : ObservableObject
         _currentSegment = segment;
         NowPlaying = track.Title;
         StatusMessage = $"Playing: {track.Title}";
+
+        // Record the play for the wedding keepsake export. Fire-and-forget so a
+        // logging hiccup never interrupts playback; failures are intentionally ignored.
+        try
+        {
+            await _playHistory.RecordPlayAsync(track.TrackId).ConfigureAwait(true);
+        }
+        catch
+        {
+            // Non-critical: keepsake history is best-effort.
+        }
     }
 
     private EventSegmentViewModel? FindSegmentContaining(TrackViewModel track) =>
@@ -519,7 +881,7 @@ public partial class MainViewModel : ObservableObject
     /// chain link (<see cref="EventSegmentViewModel.NextSectionId"/>), a loop back to the
     /// segment's first track, then spilling into the next non-empty segment by position.
     /// </summary>
-    private (EventSegmentViewModel Segment, TrackViewModel Track)? FindNext()
+    private (EventSegmentViewModel Segment, TrackViewModel Track, bool SameSegment)? FindNext()
     {
         if (_currentSegment is null || _currentTrack is null) return null;
         int segIdx = Segments.IndexOf(_currentSegment);
@@ -527,31 +889,33 @@ public partial class MainViewModel : ObservableObject
 
         int trackIdx = _currentSegment.Tracks.IndexOf(_currentTrack);
         if (trackIdx >= 0 && trackIdx + 1 < _currentSegment.Tracks.Count)
-            return (_currentSegment, _currentSegment.Tracks[trackIdx + 1]);
+            return (_currentSegment, _currentSegment.Tracks[trackIdx + 1], true);
 
         // End of segment. 1) Explicit chain link wins if the target has tracks.
         if (_currentSegment.NextSectionId is { } nextId)
         {
             var linked = Segments.FirstOrDefault(s => s.SectionId == nextId);
             if (linked is not null && linked.Tracks.Count > 0)
-                return (linked, linked.Tracks[0]);
+                return (linked, linked.Tracks[0], false);
         }
 
         // 2) Loop back to this segment's first track.
         if (_currentSegment.IsLooping && _currentSegment.Tracks.Count > 0)
-            return (_currentSegment, _currentSegment.Tracks[0]);
+            return (_currentSegment, _currentSegment.Tracks[0], true);
 
         // 3) Spill into the first track of the next non-empty segment by order.
         for (int s = segIdx + 1; s < Segments.Count; s++)
             if (Segments[s].Tracks.Count > 0)
-                return (Segments[s], Segments[s].Tracks[0]);
+                return (Segments[s], Segments[s].Tracks[0], false);
 
         return null;
     }
 
     /// <summary>
     /// Auto-advance logic. An Emergency Fade always advances ("bride reached the
-    /// altar early"); a natural end only advances for continuous/auto segments.
+    /// altar early"). Songs within the same playlist always play through; the
+    /// per-segment transition mode only governs whether playback spills into the
+    /// *next* segment (e.g. a Processional cue that must wait for the operator).
     /// </summary>
     private async void OnMasterTrackCompleted(TrackEndReason reason)
     {
@@ -566,7 +930,11 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
+        // Continuing inside the same playlist always advances; a manual Emergency
+        // Fade always advances. Crossing into a different segment honours that
+        // segment's transition rules (continuous/auto mixes, loops, explicit chains).
         bool auto = forced ||
+            next.Value.SameSegment ||
             _currentSegment!.TransitionMode is TransitionMode.ContinuousMix or TransitionMode.AutoAdvance ||
             _currentSegment.IsLooping ||
             _currentSegment.NextSectionId is not null;

@@ -1,0 +1,271 @@
+﻿using System.IO;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using WeddingAudioEngine;
+using WeddingMusicData.Caching;
+using WeddingMusicData.Models;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>Why the master deck finished a track — governs auto-advance behaviour.</summary>
+public enum TrackEndReason
+{
+    /// <summary>Playback reached the track's natural end / T-out.</summary>
+    NaturalEnd,
+
+    /// <summary>The operator triggered the Emergency Fade &amp; Advance.</summary>
+    EmergencyFade
+}
+
+/// <summary>
+/// Facade the UI layer talks to. Encapsulates the dual-deck NAudio engine so the
+/// ViewModels never touch WASAPI/stream lifetimes directly. All methods are safe
+/// to call from the UI thread; long-running teardown happens inside the engine.
+/// </summary>
+public interface IPlaybackService
+{
+    string? CurrentTrackTitle { get; }
+    DeckState MasterState { get; }
+
+    /// <summary>Master output level, 0.0 (silent) .. 1.0 (unity).</summary>
+    float MasterVolume { get; set; }
+
+    /// <summary>Read-only master playhead position.</summary>
+    TimeSpan MasterPosition { get; }
+
+    /// <summary>Total duration of the track currently on the master deck.</summary>
+    TimeSpan MasterDuration { get; }
+
+    /// <summary>Repositions the master deck playhead. Safe to ignore when nothing is playing.</summary>
+    void SeekMaster(TimeSpan position);
+
+    /// <summary>Low-shelf EQ gain (dB) on the master deck. Range ±12 dB.</summary>
+    float MasterEqLowDb { get; set; }
+
+    /// <summary>Mid peaking EQ gain (dB) on the master deck. Range ±12 dB.</summary>
+    float MasterEqMidDb { get; set; }
+
+    /// <summary>High-shelf EQ gain (dB) on the master deck. Range ±12 dB.</summary>
+    float MasterEqHighDb { get; set; }
+
+    event EventHandler<TrackEndReason>? MasterTrackCompleted;
+    event EventHandler? StateChanged;
+
+    void PlayOnMaster(Track track, CueSettings? cue);
+
+    /// <summary>
+    /// Cache-aware, fail-safe play: guarantees a local copy exists before playback so a
+    /// live network connection is never required, and reports an error message (instead of
+    /// throwing) when playback cannot start. Returns null on success.
+    /// </summary>
+    Task<string?> PlayOnMasterAsync(Track track, CueSettings? cue, CancellationToken ct = default);
+
+    void PreviewOnCue(Track track, CueSettings? cue);
+    void Pause();
+    void Resume();
+    Task EmergencyFadeAsync(CancellationToken ct = default);
+}
+
+public sealed class PlaybackService : IPlaybackService, IDisposable
+{
+    private readonly DualDeckAudioEngine _engine;
+    private readonly IOfflineCacheService _cache;
+    private string? _currentTitle;
+    private volatile bool _emergencyActive;
+
+    public PlaybackService(DualDeckAudioEngine engine, IOfflineCacheService cache)
+    {
+        _engine = engine;
+        _cache = cache;
+        _engine.MasterTrackCompleted += OnEngineMasterCompleted;
+        _engine.Master.StateChanged += (s, e) => StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public string? CurrentTrackTitle => _currentTitle;
+    public DeckState MasterState => _engine.Master.State;
+
+    public float MasterVolume
+    {
+        get => _engine.MasterVolume;
+        set => _engine.MasterVolume = value;
+    }
+
+    public TimeSpan MasterPosition => _engine.MasterPosition;
+    public TimeSpan MasterDuration => _engine.MasterDuration;
+
+    public event EventHandler<TrackEndReason>? MasterTrackCompleted;
+    public event EventHandler? StateChanged;
+
+    private void OnEngineMasterCompleted(object? sender, EventArgs e)
+    {
+        // The engine raises a single event for both natural end and emergency fade;
+        // translate it into a reason so the UI can decide whether to force-advance.
+        var reason = _emergencyActive ? TrackEndReason.EmergencyFade : TrackEndReason.NaturalEnd;
+        _emergencyActive = false;
+        MasterTrackCompleted?.Invoke(this, reason);
+    }
+
+    public void PlayOnMaster(Track track, CueSettings? cue)
+    {
+        var (tIn, tOut, fadeIn, fadeOut) = Resolve(cue, track);
+        var (fadeInShape, fadeOutShape) = ResolveShapes(cue);
+        _engine.PlayOnMaster(ResolveSource(track), tIn, tOut, fadeIn, fadeOut, fadeInShape, fadeOutShape);
+        _currentTitle = track.Title;
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public async Task<string?> PlayOnMasterAsync(Track track, CueSettings? cue, CancellationToken ct = default)
+    {
+        // Ensure the audio is on local disk first; this downloads the external stream when
+        // needed so ResolveSource can hand the engine a local path rather than a remote URI.
+        try
+        {
+            var localPath = await _cache.EnsureCachedAsync(track.Id, ct).ConfigureAwait(true);
+
+            // The cache service persists CachedFilePath on its own DbContext copy of the
+            // track; the in-memory instance we were handed is stale. Sync it here so
+            // ResolveSource picks the freshly cached file instead of falling back to the
+            // remote URI (which the audio engine cannot play and would crash on).
+            if (localPath is not null
+                && !string.Equals(localPath, track.FilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                track.CachedFilePath = localPath;
+                track.IsCachedOffline = true;
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return "Cache folder permission denied. Try running as administrator or check your antivirus settings.";
+        }
+        catch (IOException ioEx)
+        {
+            return $"Cache storage error: {ioEx.Message}. Check available disk space and permissions.";
+        }
+        catch (InvalidOperationException invalidEx) when (invalidEx.Message.Contains("YouTube"))
+        {
+            // YouTube-specific errors (age-restricted, region-locked, etc.)
+            return $"Cannot play: {invalidEx.Message}";
+        }
+        catch (HttpRequestException)
+        {
+            return "Network error: Cannot download track. Check your internet connection.";
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return $"Cache error: {ex.Message}";
+        }
+
+        try
+        {
+            PlayOnMaster(track, cue);
+            return null;
+        }
+        catch (Exception ex) when (ex is COMException or IOException or HttpRequestException
+                                        or ArgumentException or InvalidOperationException)
+        {
+            // Fail gracefully instead of crashing the deck, but surface the real cause.
+            // A remote-only source that can't be reached gets a human-readable message.
+            if (_cache.ResolveLocalPath(track) is null && track.ExternalUri is not null)
+                return "Couldn't find playable audio for this streaming reference (no matching YouTube result). Import the song file to play it locally.";
+            return ex.Message;
+        }
+    }
+
+    public void PreviewOnCue(Track track, CueSettings? cue)
+    {
+        var (tIn, tOut, _, _) = Resolve(cue, track);
+        _engine.PreviewOnCue(ResolveSource(track), tIn, tOut);
+    }
+
+    /// <summary>
+    /// Fail-safe source selection: prefer a local/cached file so a network dropout
+    /// never interrupts playback. Falls back to the remote URI only when nothing
+    /// is cached on disk.
+    /// </summary>
+    private string ResolveSource(Track track)
+    {
+        var local = _cache.ResolveLocalPath(track);
+        if (local is not null) return local;
+        return track.ExternalUri ?? track.FilePath;
+    }
+
+    /// <summary>Pauses only when actually playing; ignored otherwise so stray clicks can't crash the deck.</summary>
+    public void Pause()
+    {
+        if (_engine.Master.State == DeckState.Playing)
+            _engine.Master.Pause();
+    }
+
+    /// <summary>Resumes only from a paused/loaded state.</summary>
+    public void Resume()
+    {
+        if (_engine.Master.State is DeckState.Paused or DeckState.Loaded)
+            _engine.Master.Play();
+    }
+
+    public Task EmergencyFadeAsync(CancellationToken ct = default)
+    {
+        _emergencyActive = true;
+        return _engine.EmergencyFadeAndAdvanceAsync(ct);
+    }
+
+    /// <summary>
+    /// Repositions the master playhead. Guarded so stray seeks while idle/stopped or
+    /// mid-emergency-fade can't crash the deck.
+    /// </summary>
+    public void SeekMaster(TimeSpan position)
+    {
+        if (_engine.Master.State is DeckState.Playing or DeckState.Paused or DeckState.Loaded)
+            _engine.SeekMaster(position);
+    }
+
+    public float MasterEqLowDb
+    {
+        get => _engine.MasterEqLowDb;
+        set => _engine.MasterEqLowDb = value;
+    }
+
+    public float MasterEqMidDb
+    {
+        get => _engine.MasterEqMidDb;
+        set => _engine.MasterEqMidDb = value;
+    }
+
+    public float MasterEqHighDb
+    {
+        get => _engine.MasterEqHighDb;
+        set => _engine.MasterEqHighDb = value;
+    }
+
+    private static (TimeSpan tIn, TimeSpan tOut, TimeSpan fadeIn, TimeSpan fadeOut) Resolve(
+        CueSettings? cue, Track track)
+    {
+        var startMs = Math.Max(0, cue?.StartMs ?? 0);
+        var tIn = TimeSpan.FromMilliseconds(startMs);
+
+        // Ignore a stop cue that isn't after the start cue; fall back to track duration.
+        var stopMs = cue?.StopMs is { } stop && stop > startMs ? stop : track.DurationMs;
+        // If the track duration is unknown (0) or not after tIn, use TimeSpan.MaxValue so the
+        // engine clamps to the actual source length instead of failing.
+        var tOut = stopMs > startMs ? TimeSpan.FromMilliseconds(stopMs) : TimeSpan.MaxValue;
+        var fadeIn = TimeSpan.FromMilliseconds(cue?.FadeInMs ?? 0);
+        var fadeOut = TimeSpan.FromMilliseconds(cue?.FadeOutMs ?? 2000);
+        return (tIn, tOut, fadeIn, fadeOut);
+    }
+
+    /// <summary>Maps the persisted per-track fade curves to the audio engine's fade shapes.</summary>
+    private static (FadeShape fadeIn, FadeShape fadeOut) ResolveShapes(CueSettings? cue)
+        => (MapCurve(cue?.FadeInCurve ?? FadeCurve.EqualPower),
+            MapCurve(cue?.FadeOutCurve ?? FadeCurve.EqualPower));
+
+    private static FadeShape MapCurve(FadeCurve curve) => curve switch
+    {
+        FadeCurve.Linear => FadeShape.Linear,
+        FadeCurve.Logarithmic => FadeShape.Logarithmic,
+        FadeCurve.EqualPower => FadeShape.EqualPower,
+        FadeCurve.SCurve => FadeShape.SCurve,
+        _ => FadeShape.Linear
+    };
+
+    public void Dispose() => _engine.Dispose();
+}

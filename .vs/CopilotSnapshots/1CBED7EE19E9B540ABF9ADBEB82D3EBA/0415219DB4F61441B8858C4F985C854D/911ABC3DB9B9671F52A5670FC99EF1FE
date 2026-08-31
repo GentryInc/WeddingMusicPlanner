@@ -1,0 +1,81 @@
+﻿using System.IO;
+using System.Text.Json;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Persists user settings (API keys) to a JSON file in LocalApplicationData.
+/// Settings are loaded on startup and saved when the user updates them via the UI.
+/// </summary>
+public class SettingsService : ISettingsService
+{
+    private readonly string _settingsPath;
+    private AppSettings _settings = new();
+
+    public SettingsService()
+    {
+        var appData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "WeddingMusicPlannerPro");
+        Directory.CreateDirectory(appData);
+        _settingsPath = Path.Combine(appData, "settings.json");
+    }
+
+    public string? YouTubeApiKey
+    {
+        get => _settings.YouTubeApiKey;
+        set => _settings.YouTubeApiKey = value;
+    }
+
+    public string? SpotifyClientId
+    {
+        get => _settings.SpotifyClientId;
+        set => _settings.SpotifyClientId = value;
+    }
+
+    public string? SpotifyClientSecret
+    {
+        get => _settings.SpotifyClientSecret;
+        set => _settings.SpotifyClientSecret = value;
+    }
+
+    public bool EnablePublicRequests
+    {
+        get => _settings.EnablePublicRequests;
+        set => _settings.EnablePublicRequests = value;
+    }
+
+    public void Save()
+    {
+        var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        File.WriteAllText(_settingsPath, json);
+    }
+
+    public void Load()
+    {
+        if (!File.Exists(_settingsPath))
+            return;
+
+        try
+        {
+            var json = File.ReadAllText(_settingsPath);
+            _settings = JsonSerializer.Deserialize<AppSettings>(json) ?? new();
+        }
+        catch
+        {
+            // Corrupted or invalid JSON; start fresh
+            _settings = new();
+        }
+    }
+
+    private class AppSettings
+    {
+        public string? YouTubeApiKey { get; set; }
+        public string? SpotifyClientId { get; set; }
+        public string? SpotifyClientSecret { get; set; }
+        public bool EnablePublicRequests { get; set; }
+    }
+}

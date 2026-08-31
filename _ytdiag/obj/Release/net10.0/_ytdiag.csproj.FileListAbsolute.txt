@@ -1,0 +1,17 @@
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\bin\Release\net10.0\_ytdiag.exe
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\bin\Release\net10.0\_ytdiag.deps.json
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\bin\Release\net10.0\_ytdiag.runtimeconfig.json
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\bin\Release\net10.0\_ytdiag.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\bin\Release\net10.0\_ytdiag.pdb
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\bin\Release\net10.0\YoutubeExplode.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.csproj.AssemblyReference.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.AssemblyInfoInputs.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.AssemblyInfo.cs
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.csproj.CoreCompileInputs.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.csproj.Up2Date
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\refint\_ytdiag.dll
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.pdb
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\_ytdiag.genruntimeconfig.cache
+C:\Users\corwy\Downloads\WeddingMusicPlanner-main\_ytdiag\obj\Release\net10.0\ref\_ytdiag.dll

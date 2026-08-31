@@ -1,0 +1,27 @@
+﻿using WeddingMusicData.Models;
+
+namespace WeddingMusicPlannerPro.Wpf.ViewModels;
+
+/// <summary>Read-only row in the DJ's guest-requests panel.</summary>
+public sealed class SongRequestViewModel
+{
+    public SongRequestViewModel(SongRequest request)
+    {
+        RequestId = request.Id;
+        TrackId = request.TrackId;
+        Title = request.Track?.Title ?? "(unknown track)";
+        Artist = request.Track?.Artist ?? "Unknown Artist";
+        GuestName = string.IsNullOrWhiteSpace(request.GuestName) ? "Anonymous" : request.GuestName!;
+        RequestedLocal = request.RequestedUtc.ToLocalTime().ToString("HH:mm");
+    }
+
+    public int RequestId { get; }
+    public int TrackId { get; }
+    public string Title { get; }
+    public string Artist { get; }
+    public string GuestName { get; }
+    public string RequestedLocal { get; }
+
+    public string Display => $"{Title} — {Artist}";
+    public string SubDisplay => $"by {GuestName} at {RequestedLocal}";
+}

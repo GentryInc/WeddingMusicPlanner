@@ -1,0 +1,275 @@
+﻿using System.Net;
+using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text;
+using System.Xml.Linq;
+using Microsoft.Extensions.Hosting;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Best-effort UPnP (IGD) port-forwarding helper so guests outside the venue
+/// network can reach the request page. When <see cref="ISettingsService.EnablePublicRequests"/>
+/// is on, this discovers the router via SSDP, asks it to forward TCP port 8420
+/// to this PC, and resolves the public URL for the QR code. Everything degrades
+/// gracefully: UPnP disabled, CGNAT, or firewall issues simply leave
+/// <see cref="IsForwarded"/> false and the app falls back to the LAN URL.
+/// </summary>
+public interface IPortForwardingService
+{
+    /// <summary>True once the router accepted the port mapping.</summary>
+    bool IsForwarded { get; }
+
+    /// <summary>Public request URL (e.g. http://203.0.113.7:8420/) when forwarded, else null.</summary>
+    string? PublicUrl { get; }
+
+    /// <summary>Human-readable status for the DJ UI (why forwarding is/isn't active).</summary>
+    string Status { get; }
+}
+
+public sealed class PortForwardingService : BackgroundService, IPortForwardingService
+{
+    private const int Port = RequestWebServer.Port;
+    private static readonly TimeSpan DiscoveryTimeout = TimeSpan.FromSeconds(3);
+
+    private readonly ISettingsService _settings;
+    private readonly IHttpClientFactory _httpFactory;
+
+    // Router control endpoint captured at setup so the mapping can be removed on shutdown.
+    private Uri? _controlUrl;
+    private string? _serviceType;
+
+    public PortForwardingService(ISettingsService settings, IHttpClientFactory httpFactory)
+    {
+        _settings = settings;
+        _httpFactory = httpFactory;
+    }
+
+    public bool IsForwarded { get; private set; }
+    public string? PublicUrl { get; private set; }
+    public string Status { get; private set; } = "Public requests are disabled.";
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        if (!_settings.EnablePublicRequests)
+            return;
+
+        Status = "Setting up port forwarding\u2026";
+        try
+        {
+            var (controlUrl, serviceType) = await DiscoverGatewayAsync(stoppingToken).ConfigureAwait(false);
+            if (controlUrl is null || serviceType is null)
+            {
+                Status = "Router not found or UPnP is disabled. Enable UPnP on your router, or forward TCP port 8420 manually.";
+                return;
+            }
+
+            _controlUrl = controlUrl;
+            _serviceType = serviceType;
+
+            var localIp = GetLanIPv4();
+            if (localIp is null)
+            {
+                Status = "No LAN address found; cannot set up port forwarding.";
+                return;
+            }
+
+            await InvokeSoapAsync(controlUrl, serviceType, "AddPortMapping", $"""
+                <NewRemoteHost></NewRemoteHost>
+                <NewExternalPort>{Port}</NewExternalPort>
+                <NewProtocol>TCP</NewProtocol>
+                <NewInternalPort>{Port}</NewInternalPort>
+                <NewInternalClient>{localIp}</NewInternalClient>
+                <NewEnabled>1</NewEnabled>
+                <NewPortMappingDescription>WeddingMusicPlanner song requests</NewPortMappingDescription>
+                <NewLeaseDuration>0</NewLeaseDuration>
+                """, stoppingToken).ConfigureAwait(false);
+
+            var externalIp = await GetExternalIpAsync(controlUrl, serviceType, stoppingToken).ConfigureAwait(false);
+            if (externalIp is null)
+            {
+                Status = "Port forwarded, but the public IP could not be determined.";
+                return;
+            }
+
+            PublicUrl = $"http://{externalIp}:{Port}/";
+            IsForwarded = true;
+            Status = $"Public requests active at {PublicUrl}";
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown during setup: nothing to report.
+        }
+        catch (Exception ex)
+        {
+            Status = $"Port forwarding failed: {ex.Message}. Guests off-network cannot connect; use the LAN QR code or forward TCP {Port} manually.";
+        }
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Best-effort cleanup so the mapping doesn't outlive the event.
+        if (IsForwarded && _controlUrl is not null && _serviceType is not null)
+        {
+            try
+            {
+                await InvokeSoapAsync(_controlUrl, _serviceType, "DeletePortMapping", $"""
+                    <NewRemoteHost></NewRemoteHost>
+                    <NewExternalPort>{Port}</NewExternalPort>
+                    <NewProtocol>TCP</NewProtocol>
+                    """, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Router unreachable at shutdown; the lease is permanent but harmless
+                // once the app (and Kestrel) stop listening.
+            }
+        }
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    // --- SSDP discovery ------------------------------------------------------
+
+    /// <summary>Multicasts an SSDP M-SEARCH for an Internet Gateway Device and parses its description.</summary>
+    private async Task<(Uri? controlUrl, string? serviceType)> DiscoverGatewayAsync(CancellationToken ct)
+    {
+        const string searchTarget = "urn:schemas-upnp-org:device:InternetGatewayDevice:1";
+        var request = Encoding.ASCII.GetBytes(
+            "M-SEARCH * HTTP/1.1\r\n" +
+            "HOST: 239.255.255.250:1900\r\n" +
+            "MAN: \"ssdp:discover\"\r\n" +
+            "MX: 2\r\n" +
+            $"ST: {searchTarget}\r\n\r\n");
+
+        using var udp = new UdpClient(AddressFamily.InterNetwork);
+        udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+        var multicast = new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900);
+        await udp.SendAsync(request, request.Length, multicast).ConfigureAwait(false);
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(DiscoveryTimeout);
+        try
+        {
+            while (!timeout.IsCancellationRequested)
+            {
+                var result = await udp.ReceiveAsync(timeout.Token).ConfigureAwait(false);
+                var response = Encoding.ASCII.GetString(result.Buffer);
+                var location = response
+                    .Split("\r\n")
+                    .FirstOrDefault(l => l.StartsWith("LOCATION:", StringComparison.OrdinalIgnoreCase))
+                    ?["LOCATION:".Length..].Trim();
+                if (location is null || !Uri.TryCreate(location, UriKind.Absolute, out var descriptionUrl))
+                    continue;
+
+                var parsed = await ParseDeviceDescriptionAsync(descriptionUrl, ct).ConfigureAwait(false);
+                if (parsed.controlUrl is not null)
+                    return parsed;
+            }
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // Discovery window elapsed without a usable answer.
+        }
+        return (null, null);
+    }
+
+    /// <summary>Extracts the WANIPConnection/WANPPPConnection control URL from the IGD description XML.</summary>
+    private async Task<(Uri? controlUrl, string? serviceType)> ParseDeviceDescriptionAsync(Uri descriptionUrl, CancellationToken ct)
+    {
+        var http = _httpFactory.CreateClient("upnp");
+        var xml = await http.GetStringAsync(descriptionUrl, ct).ConfigureAwait(false);
+        var doc = XDocument.Parse(xml);
+
+        foreach (var service in doc.Descendants().Where(e => e.Name.LocalName == "service"))
+        {
+            var type = service.Elements().FirstOrDefault(e => e.Name.LocalName == "serviceType")?.Value;
+            if (type is null) continue;
+            if (!type.Contains("WANIPConnection", StringComparison.OrdinalIgnoreCase) &&
+                !type.Contains("WANPPPConnection", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var control = service.Elements().FirstOrDefault(e => e.Name.LocalName == "controlURL")?.Value;
+            if (control is null) continue;
+
+            var controlUrl = Uri.TryCreate(control, UriKind.Absolute, out var abs)
+                ? abs
+                : new Uri(new Uri(descriptionUrl.GetLeftPart(UriPartial.Authority)), control);
+            return (controlUrl, type);
+        }
+        return (null, null);
+    }
+
+    // --- SOAP actions --------------------------------------------------------
+
+    private async Task<string> InvokeSoapAsync(Uri controlUrl, string serviceType, string action, string argumentsXml, CancellationToken ct)
+    {
+        var envelope = $"""
+            <?xml version="1.0"?>
+            <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+              <s:Body>
+                <u:{action} xmlns:u="{serviceType}">
+                  {argumentsXml}
+                </u:{action}>
+              </s:Body>
+            </s:Envelope>
+            """;
+
+        var http = _httpFactory.CreateClient("upnp");
+        using var content = new StringContent(envelope, Encoding.UTF8, "text/xml");
+        content.Headers.Add("SOAPAction", $"\"{serviceType}#{action}\"");
+        using var response = await http.PostAsync(controlUrl, content, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Router refused {action} (HTTP {(int)response.StatusCode}).");
+        return body;
+    }
+
+    private async Task<string?> GetExternalIpAsync(Uri controlUrl, string serviceType, CancellationToken ct)
+    {
+        try
+        {
+            var body = await InvokeSoapAsync(controlUrl, serviceType, "GetExternalIPAddress", string.Empty, ct)
+                .ConfigureAwait(false);
+            var ip = XDocument.Parse(body).Descendants()
+                .FirstOrDefault(e => e.Name.LocalName == "NewExternalIPAddress")?.Value;
+            if (!string.IsNullOrWhiteSpace(ip) && ip != "0.0.0.0")
+                return ip;
+        }
+        catch
+        {
+            // Fall through to the web lookup.
+        }
+
+        try
+        {
+            var http = _httpFactory.CreateClient("upnp");
+            var ip = (await http.GetStringAsync("https://api.ipify.org", ct).ConfigureAwait(false)).Trim();
+            return IPAddress.TryParse(ip, out _) ? ip : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Same LAN IPv4 heuristic the request server uses for its URL.</summary>
+    private static string? GetLanIPv4()
+    {
+        try
+        {
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(n => n.OperationalStatus == OperationalStatus.Up
+                            && n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+                .Select(a => a.Address)
+                .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork
+                                     && !IPAddress.IsLoopback(a))
+                ?.ToString();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}

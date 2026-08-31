@@ -1,0 +1,518 @@
+﻿using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Microsoft.Extensions.Hosting;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Best-effort UPnP (IGD) port-forwarding helper so guests outside the venue
+/// network can reach the request page. When <see cref="ISettingsService.EnablePublicRequests"/>
+/// is on, this discovers the router via SSDP, asks it to forward TCP port 8420
+/// to this PC, and resolves the public URL for the QR code. Everything degrades
+/// gracefully: UPnP disabled, CGNAT, or firewall issues simply leave
+/// <see cref="IsForwarded"/> false and the app falls back to the LAN URL.
+/// </summary>
+public interface IPortForwardingService
+{
+    /// <summary>True once the router accepted the port mapping.</summary>
+    bool IsForwarded { get; }
+
+    /// <summary>Public request URL (e.g. http://203.0.113.7:8420/) when forwarded, else null.</summary>
+    string? PublicUrl { get; }
+
+    /// <summary>Human-readable status for the DJ UI (why forwarding is/isn't active).</summary>
+    string Status { get; }
+}
+
+public sealed class PortForwardingService : BackgroundService, IPortForwardingService
+{
+    private const int Port = RequestWebServer.Port;
+    private static readonly TimeSpan DiscoveryTimeout = TimeSpan.FromSeconds(3);
+
+    private readonly ISettingsService _settings;
+    private readonly IHttpClientFactory _httpFactory;
+
+    // Router control endpoint captured at setup so the mapping can be removed on shutdown.
+    private Uri? _controlUrl;
+    private string? _serviceType;
+
+    public PortForwardingService(ISettingsService settings, IHttpClientFactory httpFactory)
+    {
+        _settings = settings;
+        _httpFactory = httpFactory;
+    }
+
+    public bool IsForwarded { get; private set; }
+    public string? PublicUrl { get; private set; }
+    public string Status { get; private set; } = "Public requests are disabled.";
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        if (!_settings.EnablePublicRequests)
+            return;
+
+        // Keep retrying: the network may not be up when the app launches, the router
+        // may be slow to answer SSDP, or the DJ may connect to venue Wi-Fi after start.
+        var delay = TimeSpan.FromSeconds(5);
+        int upnpAttempts = 0;
+        while (!stoppingToken.IsCancellationRequested && !IsForwarded)
+        {
+            Status = "Setting up port forwarding\u2026";
+            try
+            {
+                await TrySetupAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return; // shutdown during setup
+            }
+            catch (Exception ex)
+            {
+                Status = $"Port forwarding failed: {ex.Message}. Retrying\u2026 (guests can still use the LAN QR code)";
+            }
+
+            if (IsForwarded) return;
+            upnpAttempts++;
+
+            // UPnP has failed repeatedly (router has it disabled, CGNAT, etc.):
+            // fall back to a public SSH reverse tunnel, which works through any NAT.
+            if (upnpAttempts >= 2)
+            {
+                await RunTunnelAsync(stoppingToken).ConfigureAwait(false);
+                if (stoppingToken.IsCancellationRequested) return;
+                // Tunnel exited/failed: loop back and retry both paths.
+            }
+
+            try { await Task.Delay(delay, stoppingToken).ConfigureAwait(false); }
+            catch (OperationCanceledException) { return; }
+            if (delay < TimeSpan.FromMinutes(1)) delay += delay; // 5s → 10s → 20s → 40s → 60s cap
+        }
+    }
+
+    // --- Public tunnel fallback (localhost.run over the built-in OpenSSH client) ---
+
+    private Process? _tunnelProcess;
+
+    /// <summary>
+    /// Opens an SSH reverse tunnel to localhost.run (no account needed) exposing the
+    /// local request server at a public https URL. Blocks while the tunnel is healthy;
+    /// returns when it dies so the caller can retry. Works through any router/CGNAT
+    /// because only an outbound SSH connection is used.
+    /// </summary>
+    private async Task RunTunnelAsync(CancellationToken ct)
+    {
+        Status = "Router UPnP unavailable \u2014 opening a public tunnel instead\u2026";
+        Process process;
+        try
+        {
+            process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "ssh",
+                    Arguments = "-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 " +
+                                "-o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -T " +
+                                $"-R 80:127.0.0.1:{Port} nokey@localhost.run",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+            if (!process.Start())
+            {
+                Status = "Could not start the ssh client for the public tunnel. Off-network guests must use the LAN QR code.";
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            // ssh.exe missing (very old Windows) or blocked.
+            Status = $"Public tunnel unavailable ({ex.Message}). Off-network guests must use the LAN QR code.";
+            return;
+        }
+
+        _tunnelProcess = process;
+        try
+        {
+            using var reg = ct.Register(() => { try { process.Kill(entireProcessTree: true); } catch { } });
+
+            // localhost.run prints the assigned public URL on stdout; watch for it.
+            // Its banner also contains admin/docs links on localhost.run itself, so only
+            // accept URLs on other hosts (the tunnel domain, e.g. https://xxxx.lhr.life).
+            var urlRegex = new Regex(@"https://[\w.-]+", RegexOptions.Compiled);
+            while (!process.HasExited)
+            {
+                var line = await process.StandardOutput.ReadLineAsync(ct).ConfigureAwait(false);
+                if (line is null) break;
+                var m = urlRegex.Match(line);
+                if (m.Success && !m.Value.Contains("localhost.run", StringComparison.OrdinalIgnoreCase))
+                {
+                    PublicUrl = m.Value;
+                    IsForwarded = true;
+                    Status = $"Public requests active at {PublicUrl} (tunnel)";
+                }
+            }
+
+            await process.WaitForExitAsync(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown: registration killed the process.
+        }
+        catch (Exception ex)
+        {
+            Status = $"Public tunnel dropped: {ex.Message}. Reconnecting\u2026";
+        }
+        finally
+        {
+            if (IsForwarded)
+            {
+                // Tunnel died after being live — clear state so the QR falls back to LAN
+                // and the retry loop re-establishes it.
+                IsForwarded = false;
+                PublicUrl = null;
+                Status = "Public tunnel disconnected. Reconnecting\u2026";
+            }
+            try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch { }
+            process.Dispose();
+            _tunnelProcess = null;
+        }
+    }
+
+    private async Task TrySetupAsync(CancellationToken stoppingToken)
+    {
+        var (controlUrl, serviceType) = await DiscoverGatewayAsync(stoppingToken).ConfigureAwait(false);
+        if (controlUrl is null || serviceType is null)
+        {
+            Status = "Router not found or UPnP is disabled. Enable UPnP on your router, or forward TCP port 8420 manually. Retrying\u2026";
+            return;
+        }
+
+        _controlUrl = controlUrl;
+        _serviceType = serviceType;
+
+        var localIp = GetLanIPv4();
+        if (localIp is null)
+        {
+            Status = "No LAN address found; cannot set up port forwarding. Retrying\u2026";
+            return;
+        }
+
+        await AddPortMappingAsync(controlUrl, serviceType, localIp, stoppingToken).ConfigureAwait(false);
+
+        var externalIp = await GetExternalIpAsync(controlUrl, serviceType, stoppingToken).ConfigureAwait(false);
+        if (externalIp is null)
+        {
+            Status = "Port forwarded, but the public IP could not be determined. Retrying\u2026";
+            return;
+        }
+
+        if (IPAddress.TryParse(externalIp, out var parsedIp) && IsPrivateOrCgnat(parsedIp))
+        {
+            // Router's WAN side is itself behind another NAT (CGNAT / double NAT):
+            // the mapping exists but is unreachable from the internet.
+            Status = $"Router forwarded the port, but its WAN address ({externalIp}) is not a public IP (double NAT / CGNAT). Off-network guests cannot connect; use the LAN QR code or a hotspot.";
+            IsForwarded = false;
+            return;
+        }
+
+        PublicUrl = $"http://{externalIp}:{Port}/";
+        IsForwarded = true;
+        Status = $"Public requests active at {PublicUrl}";
+    }
+
+    /// <summary>
+    /// Adds the mapping, transparently handling the two most common router refusals:
+    /// 718 ConflictInMappingEntry (stale mapping from a previous run → delete and retry)
+    /// and 725 OnlyPermanentLeasesSupported's inverse (permanent lease refused → retry
+    /// with a 24-hour lease).
+    /// </summary>
+    private async Task AddPortMappingAsync(Uri controlUrl, string serviceType, string localIp, CancellationToken ct)
+    {
+        string ArgsXml(int leaseSeconds) => $"""
+            <NewRemoteHost></NewRemoteHost>
+            <NewExternalPort>{Port}</NewExternalPort>
+            <NewProtocol>TCP</NewProtocol>
+            <NewInternalPort>{Port}</NewInternalPort>
+            <NewInternalClient>{localIp}</NewInternalClient>
+            <NewEnabled>1</NewEnabled>
+            <NewPortMappingDescription>WeddingMusicPlanner song requests</NewPortMappingDescription>
+            <NewLeaseDuration>{leaseSeconds}</NewLeaseDuration>
+            """;
+
+        try
+        {
+            await InvokeSoapAsync(controlUrl, serviceType, "AddPortMapping", ArgsXml(0), ct).ConfigureAwait(false);
+            return;
+        }
+        catch (UpnpSoapException ex) when (ex.ErrorCode == 718)
+        {
+            // Stale/conflicting mapping (often ours from a previous unclean shutdown).
+            await TryDeleteMappingAsync(controlUrl, serviceType, ct).ConfigureAwait(false);
+            await InvokeSoapAsync(controlUrl, serviceType, "AddPortMapping", ArgsXml(0), ct).ConfigureAwait(false);
+            return;
+        }
+        catch (UpnpSoapException ex) when (ex.ErrorCode is 725 or 402)
+        {
+            // Router refuses permanent leases (or rejects our argument set): ask for 24h.
+            await InvokeSoapAsync(controlUrl, serviceType, "AddPortMapping", ArgsXml(86400), ct).ConfigureAwait(false);
+        }
+    }
+
+    private async Task TryDeleteMappingAsync(Uri controlUrl, string serviceType, CancellationToken ct)
+    {
+        try
+        {
+            await InvokeSoapAsync(controlUrl, serviceType, "DeletePortMapping", $"""
+                <NewRemoteHost></NewRemoteHost>
+                <NewExternalPort>{Port}</NewExternalPort>
+                <NewProtocol>TCP</NewProtocol>
+                """, ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Nothing to delete or router refused; the retry Add will surface any real error.
+        }
+    }
+
+    private static bool IsPrivateOrCgnat(IPAddress ip)
+    {
+        var b = ip.GetAddressBytes();
+        if (b.Length != 4) return false;
+        return b[0] == 10
+            || (b[0] == 172 && b[1] >= 16 && b[1] <= 31)
+            || (b[0] == 192 && b[1] == 168)
+            || (b[0] == 100 && b[1] >= 64 && b[1] <= 127) // CGNAT 100.64/10
+            || (b[0] == 169 && b[1] == 254);
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Stop the tunnel first so the public URL goes dark with the app.
+        try { _tunnelProcess?.Kill(entireProcessTree: true); } catch { }
+
+        // Best-effort cleanup so the mapping doesn't outlive the event.
+        if (IsForwarded && _controlUrl is not null && _serviceType is not null)
+        {
+            try
+            {
+                await InvokeSoapAsync(_controlUrl, _serviceType, "DeletePortMapping", $"""
+                    <NewRemoteHost></NewRemoteHost>
+                    <NewExternalPort>{Port}</NewExternalPort>
+                    <NewProtocol>TCP</NewProtocol>
+                    """, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Router unreachable at shutdown; the lease is permanent but harmless
+                // once the app (and Kestrel) stop listening.
+            }
+        }
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    // --- SSDP discovery ------------------------------------------------------
+
+    /// <summary>Multicasts SSDP M-SEARCHes for IGD v1/v2 on every LAN interface and parses the first usable answer.</summary>
+    private async Task<(Uri? controlUrl, string? serviceType)> DiscoverGatewayAsync(CancellationToken ct)
+    {
+        string[] searchTargets =
+        {
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:1",
+            "urn:schemas-upnp-org:device:InternetGatewayDevice:2",
+            "upnp:rootdevice"
+        };
+
+        var multicast = new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900);
+        using var udp = new UdpClient(AddressFamily.InterNetwork);
+        udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+        // Bind to the LAN interface explicitly; on multi-NIC machines (VPNs, virtual
+        // adapters, hotspots) Windows otherwise multicasts out the wrong interface.
+        if (GetLanIPv4() is { } lanIp && IPAddress.TryParse(lanIp, out var bindIp))
+        {
+            try { udp.Client.Bind(new IPEndPoint(bindIp, 0)); }
+            catch { /* fall back to the default interface */ }
+        }
+
+        // Send each search target a couple of times: SSDP is UDP and single packets
+        // are routinely dropped by busy venue Wi-Fi.
+        for (int burst = 0; burst < 2; burst++)
+        {
+            foreach (var st in searchTargets)
+            {
+                var request = Encoding.ASCII.GetBytes(
+                    "M-SEARCH * HTTP/1.1\r\n" +
+                    "HOST: 239.255.255.250:1900\r\n" +
+                    "MAN: \"ssdp:discover\"\r\n" +
+                    "MX: 2\r\n" +
+                    $"ST: {st}\r\n\r\n");
+                try { await udp.SendAsync(request, request.Length, multicast).ConfigureAwait(false); }
+                catch { /* transient send failure; other bursts may still work */ }
+            }
+        }
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(DiscoveryTimeout);
+        var seenLocations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            while (!timeout.IsCancellationRequested)
+            {
+                var result = await udp.ReceiveAsync(timeout.Token).ConfigureAwait(false);
+                var response = Encoding.ASCII.GetString(result.Buffer);
+                var location = response
+                    .Split("\r\n")
+                    .FirstOrDefault(l => l.StartsWith("LOCATION:", StringComparison.OrdinalIgnoreCase))
+                    ?["LOCATION:".Length..].Trim();
+                if (location is null || !seenLocations.Add(location)
+                    || !Uri.TryCreate(location, UriKind.Absolute, out var descriptionUrl))
+                    continue;
+
+                try
+                {
+                    var parsed = await ParseDeviceDescriptionAsync(descriptionUrl, ct).ConfigureAwait(false);
+                    if (parsed.controlUrl is not null)
+                        return parsed;
+                }
+                catch
+                {
+                    // Malformed/unreachable description from one device; keep listening.
+                }
+            }
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // Discovery window elapsed without a usable answer.
+        }
+        return (null, null);
+    }
+
+    /// <summary>Extracts the WANIPConnection/WANPPPConnection control URL from the IGD description XML.</summary>
+    private async Task<(Uri? controlUrl, string? serviceType)> ParseDeviceDescriptionAsync(Uri descriptionUrl, CancellationToken ct)
+    {
+        var http = _httpFactory.CreateClient("upnp");
+        var xml = await http.GetStringAsync(descriptionUrl, ct).ConfigureAwait(false);
+        var doc = XDocument.Parse(xml);
+
+        foreach (var service in doc.Descendants().Where(e => e.Name.LocalName == "service"))
+        {
+            var type = service.Elements().FirstOrDefault(e => e.Name.LocalName == "serviceType")?.Value;
+            if (type is null) continue;
+            if (!type.Contains("WANIPConnection", StringComparison.OrdinalIgnoreCase) &&
+                !type.Contains("WANPPPConnection", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var control = service.Elements().FirstOrDefault(e => e.Name.LocalName == "controlURL")?.Value;
+            if (control is null) continue;
+
+            var controlUrl = Uri.TryCreate(control, UriKind.Absolute, out var abs)
+                ? abs
+                : new Uri(new Uri(descriptionUrl.GetLeftPart(UriPartial.Authority)), control);
+            return (controlUrl, type);
+        }
+        return (null, null);
+    }
+
+    // --- SOAP actions --------------------------------------------------------
+
+    private async Task<string> InvokeSoapAsync(Uri controlUrl, string serviceType, string action, string argumentsXml, CancellationToken ct)
+    {
+        var envelope = $"""
+            <?xml version="1.0"?>
+            <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+              <s:Body>
+                <u:{action} xmlns:u="{serviceType}">
+                  {argumentsXml}
+                </u:{action}>
+              </s:Body>
+            </s:Envelope>
+            """;
+
+        var http = _httpFactory.CreateClient("upnp");
+        using var content = new StringContent(envelope, Encoding.UTF8, "text/xml");
+        content.Headers.Add("SOAPAction", $"\"{serviceType}#{action}\"");
+        using var response = await http.PostAsync(controlUrl, content, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            // UPnP errors come back as HTTP 500 with an errorCode element; surface the
+            // code so callers can react to specific refusals (718 conflict, 725 lease).
+            int code = 0;
+            string? description = null;
+            try
+            {
+                var doc = XDocument.Parse(body);
+                var codeText = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "errorCode")?.Value;
+                description = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "errorDescription")?.Value;
+                _ = int.TryParse(codeText, out code);
+            }
+            catch { /* non-XML error body */ }
+            throw new UpnpSoapException(code,
+                $"Router refused {action} (HTTP {(int)response.StatusCode}{(code > 0 ? $", UPnP error {code}" : "")}{(description is null ? "" : $": {description}")}).");
+        }
+        return body;
+    }
+
+    /// <summary>SOAP fault carrying the UPnP error code (e.g. 718 ConflictInMappingEntry).</summary>
+    private sealed class UpnpSoapException : InvalidOperationException
+    {
+        public UpnpSoapException(int errorCode, string message) : base(message) => ErrorCode = errorCode;
+        public int ErrorCode { get; }
+    }
+
+    private async Task<string?> GetExternalIpAsync(Uri controlUrl, string serviceType, CancellationToken ct)
+    {
+        try
+        {
+            var body = await InvokeSoapAsync(controlUrl, serviceType, "GetExternalIPAddress", string.Empty, ct)
+                .ConfigureAwait(false);
+            var ip = XDocument.Parse(body).Descendants()
+                .FirstOrDefault(e => e.Name.LocalName == "NewExternalIPAddress")?.Value;
+            if (!string.IsNullOrWhiteSpace(ip) && ip != "0.0.0.0")
+                return ip;
+        }
+        catch
+        {
+            // Fall through to the web lookup.
+        }
+
+        try
+        {
+            var http = _httpFactory.CreateClient("upnp");
+            var ip = (await http.GetStringAsync("https://api.ipify.org", ct).ConfigureAwait(false)).Trim();
+            return IPAddress.TryParse(ip, out _) ? ip : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Same LAN IPv4 heuristic the request server uses for its URL.</summary>
+    private static string? GetLanIPv4()
+    {
+        try
+        {
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(n => n.OperationalStatus == OperationalStatus.Up
+                            && n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+                .Select(a => a.Address)
+                .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork
+                                     && !IPAddress.IsLoopback(a))
+                ?.ToString();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}

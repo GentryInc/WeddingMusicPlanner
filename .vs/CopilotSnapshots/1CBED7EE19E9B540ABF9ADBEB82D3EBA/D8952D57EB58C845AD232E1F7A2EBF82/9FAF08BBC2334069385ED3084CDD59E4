@@ -1,0 +1,127 @@
+﻿using Microsoft.EntityFrameworkCore;
+using WeddingMusicData;
+using WeddingMusicData.Models;
+using WeddingMusicSearch.Abstractions;
+
+namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Persistence layer for guest song requests. Used by the embedded request web
+/// server (search/create) and the DJ's Requests panel (list/approve/reject).
+/// Guest search fans out to the same unified gateway the DJ uses (local library
+/// plus Spotify/YouTube), so guests can request any song — remote hits are
+/// persisted as streaming-backed tracks on submission.
+/// Each call uses a short-lived context so it is safe from any thread.
+/// </summary>
+public interface ISongRequestService
+{
+    /// <summary>Unified search (local + streaming providers) for the guest request page.</summary>
+    Task<IReadOnlyList<SearchResult>> SearchAsync(string query, int limit = 20, CancellationToken ct = default);
+
+    /// <summary>
+    /// Creates a pending request from a search hit. Remote hits are first persisted
+    /// as streaming-backed tracks (idempotently, keyed by URI). Returns false when
+    /// the hit cannot be resolved to a track.
+    /// </summary>
+    Task<bool> CreateRequestAsync(SearchResult hit, string? guestName, CancellationToken ct = default);
+
+    /// <summary>Pending requests, oldest first, with the requested track included.</summary>
+    Task<IReadOnlyList<SongRequest>> GetPendingRequestsAsync(CancellationToken ct = default);
+
+    /// <summary>Marks a request approved or rejected.</summary>
+    Task ResolveRequestAsync(int requestId, bool approved, CancellationToken ct = default);
+}
+
+public sealed class SongRequestService : ISongRequestService
+{
+    private readonly IDbContextFactory<WeddingMusicContext> _factory;
+    private readonly ISearchGateway _search;
+    private readonly ILibraryService _library;
+
+    public SongRequestService(
+        IDbContextFactory<WeddingMusicContext> factory,
+        ISearchGateway search,
+        ILibraryService library)
+    {
+        _factory = factory;
+        _search = search;
+        _library = library;
+    }
+
+    public async Task<IReadOnlyList<SearchResult>> SearchAsync(string query, int limit = 20, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return Array.Empty<SearchResult>();
+
+        var response = await _search
+            .SearchAsync(new SearchQuery { Text = query.Trim(), Limit = limit }, ct)
+            .ConfigureAwait(false);
+
+        // Guests only see streaming providers; the DJ's local library and
+        // catalog-only sources stay private to the operator UI.
+        return response.Results
+            .Where(r => r.Source is SearchSource.Spotify or SearchSource.YouTube)
+            .ToList();
+    }
+
+    public async Task<bool> CreateRequestAsync(SearchResult hit, string? guestName, CancellationToken ct = default)
+    {
+        // Resolve (or create) the library track for this hit. Local hits map to their
+        // existing PK; remote hits are persisted as streaming references, exactly like
+        // the DJ's own add-from-search flow, so approval/playback needs no special case.
+        int trackId;
+        try
+        {
+            trackId = await _library.EnsureTrackAsync(hit, ct).ConfigureAwait(false);
+        }
+        catch (Exception) when (ct.IsCancellationRequested is false)
+        {
+            return false;
+        }
+
+        await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+        // Collapse duplicates: an identical pending request for the same track is a no-op.
+        bool alreadyPending = await db.SongRequests
+            .AnyAsync(r => r.TrackId == trackId && r.Status == SongRequestStatus.Pending, ct)
+            .ConfigureAwait(false);
+        if (alreadyPending)
+            return true;
+
+        var trimmed = guestName?.Trim();
+        db.SongRequests.Add(new SongRequest
+        {
+            TrackId = trackId,
+            GuestName = string.IsNullOrWhiteSpace(trimmed)
+                ? null
+                : trimmed.Length > 128 ? trimmed[..128] : trimmed
+        });
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+        return true;
+    }
+
+    public async Task<IReadOnlyList<SongRequest>> GetPendingRequestsAsync(CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        // Ordered by Id (autoincrement = chronological): SQLite cannot translate
+        // ORDER BY on DateTimeOffset, which previously threw and left the DJ's
+        // requests panel silently empty.
+        return await db.SongRequests.AsNoTracking()
+            .Include(r => r.Track)
+            .Where(r => r.Status == SongRequestStatus.Pending)
+            .OrderBy(r => r.Id)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task ResolveRequestAsync(int requestId, bool approved, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        var request = await db.SongRequests.FirstOrDefaultAsync(r => r.Id == requestId, ct).ConfigureAwait(false);
+        if (request is null) return;
+
+        request.Status = approved ? SongRequestStatus.Approved : SongRequestStatus.Rejected;
+        request.ResolvedUtc = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+    }
+}

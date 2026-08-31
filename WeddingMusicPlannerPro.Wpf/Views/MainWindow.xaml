@@ -35,6 +35,14 @@
                     <Button Content="Import Music" Command="{Binding ImportCommand}"
                             AutomationProperties.Name="Import your own music files"
                             AutomationProperties.HelpText="Upload MP3, MP4, M4A, WAV, FLAC or AAC files into the library."
+                            Margin="0,0,8,0"/>
+                    <Button Content="Settings" Command="{Binding OpenSettingsCommand}"
+                            AutomationProperties.Name="Configure API keys"
+                            AutomationProperties.HelpText="Set YouTube and Spotify API keys for music search."
+                            Margin="0,0,8,0"/>
+                    <Button Content="Request QR" Command="{Binding ShowRequestQrCommand}"
+                            AutomationProperties.Name="Show guest song request QR code"
+                            AutomationProperties.HelpText="Displays a QR code guests scan to request songs from their phones."
                             Margin="0,0,16,0"/>
                     <Button Content="Preview (Cue)" Command="{Binding PreviewCommand}"
                             CommandParameter="{Binding SelectedTrack}"
@@ -46,6 +54,28 @@
                             AutomationProperties.Name="Pause playback" Margin="0,0,8,0"/>
                     <Button Content="Resume" Command="{Binding ResumeCommand}"
                             AutomationProperties.Name="Resume playback"/>
+
+                    <!-- ===== DJ microphone (talkover): mic plays through speakers, music ducks ===== -->
+                    <Separator Margin="12,0" Background="{StaticResource AccentBrush}"/>
+                    <ComboBox ItemsSource="{Binding MicDevices}"
+                              SelectedItem="{Binding SelectedMicDevice}"
+                              DisplayMemberPath="FriendlyName"
+                              MinWidth="140" Margin="0,0,8,0"
+                              AutomationProperties.Name="Select microphone device"
+                              AutomationProperties.HelpText="Choose which microphone to use for DJ talkover."/>
+                    <ToggleButton Content="🎤 Mic"
+                                  IsChecked="{Binding IsMicLive, Mode=OneWay}"
+                                  Command="{Binding ToggleMicCommand}"
+                                  AutomationProperties.Name="Toggle DJ microphone"
+                                  AutomationProperties.HelpText="Turns the DJ microphone on or off. While live, the mic plays through the speakers and the music volume is automatically lowered."
+                                  MinWidth="70" Margin="0,0,8,0"
+                                  Foreground="{StaticResource ForegroundBrush}"
+                                  Background="{StaticResource PanelBrush}"
+                                  BorderBrush="{StaticResource AccentBrush}"/>
+                    <Button Content="⟳" Command="{Binding RefreshMicDevicesCommand}"
+                            AutomationProperties.Name="Refresh microphone list"
+                            AutomationProperties.HelpText="Rescans for connected microphones."
+                            MinWidth="28"/>
 
                     <!-- ===== Playlist builder: reorder / remove the selected track ===== -->
                     <Separator Margin="12,0" Background="{StaticResource AccentBrush}"/>
@@ -233,8 +263,14 @@
             </StackPanel>
         </Border>
 
-        <!-- ===== Event Segment Buckets ===== -->
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <!-- ===== Event Segment Buckets + Guest Requests ===== -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding Segments}"
                           AutomationProperties.Name="Event segment buckets">
                 <ItemsControl.ItemsPanel>
@@ -246,10 +282,34 @@
                     <DataTemplate DataType="{x:Type vm:EventSegmentViewModel}">
                         <Border Width="320" Margin="10" CornerRadius="8"
                                 Background="{StaticResource PanelBrush}"
-                                BorderBrush="{StaticResource AccentBrush}" BorderThickness="1"
                                 AutomationProperties.Name="{Binding AccessibleName}">
+                            <Border.InputBindings>
+                                <MouseBinding MouseAction="LeftClick"
+                                              Command="{Binding DataContext.SelectSegmentCommand,
+                                                        RelativeSource={RelativeSource AncestorType=Window}}"
+                                              CommandParameter="{Binding}"/>
+                            </Border.InputBindings>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BorderBrush" Value="#FF7C5CFF"/>
+                                            <Setter Property="BorderThickness" Value="3"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <DockPanel Margin="10">
                                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                                    <!-- Focused badge: added songs go to this playlist -->
+                                    <Border CornerRadius="3" Padding="6,1" Margin="0,0,0,4"
+                                            Background="#FF7C5CFF" HorizontalAlignment="Left"
+                                            Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="⭐ FOCUSED — songs added here" FontSize="10" FontWeight="Bold"
+                                                   Foreground="White"/>
+                                    </Border>
                                     <!-- Editable playlist name + rename/delete -->
                                     <DockPanel LastChildFill="True">
                                         <Button DockPanel.Dock="Right" Content="✕" MinWidth="28" Margin="4,0,0,0"
@@ -318,7 +378,29 @@
                                         <DataTemplate DataType="{x:Type vm:TrackViewModel}">
                                             <Border Padding="8" Margin="0,2" CornerRadius="4"
                                                     Background="#FF262626"
+                                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     AutomationProperties.Name="{Binding AccessibleName}">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="▶ Play (Master)"
+                                                                  Command="{Binding PlacementTarget.Tag.PlayCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="🎧 Preview (Cue)"
+                                                                  Command="{Binding PlacementTarget.Tag.PreviewCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="Move Up"
+                                                                  Command="{Binding PlacementTarget.Tag.MoveTrackUpCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="Move Down"
+                                                                  Command="{Binding PlacementTarget.Tag.MoveTrackDownCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="🗑 Remove from playlist"
+                                                                  Command="{Binding PlacementTarget.Tag.RemoveTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
                                                 <DockPanel>
                                                     <TextBlock DockPanel.Dock="Right" Text="{Binding DurationDisplay}"
                                                                Foreground="{StaticResource SubtleTextBrush}"/>
@@ -339,7 +421,75 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </ScrollViewer>
+            </ScrollViewer>
+
+            <!-- ===== Guest Requests panel (QR / LAN submissions) ===== -->
+            <Border Grid.Column="1" Width="280" Margin="0,10,10,10" CornerRadius="8"
+                    Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
+                <DockPanel Margin="10">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding RequestsHeader}"
+                               FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
+                               Foreground="{StaticResource ForegroundBrush}"
+                               AutomationProperties.LiveSetting="Polite"/>
+                    <TextBlock DockPanel.Dock="Top" Text="Guests scan the Request QR code to send songs here."
+                               FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"
+                               Foreground="{StaticResource SubtleTextBrush}"/>
+                    <TextBlock DockPanel.Dock="Top" Text="Approved requests go to:"
+                               FontSize="11" Margin="0,0,0,4"
+                               Foreground="{StaticResource SubtleTextBrush}"/>
+                    <ComboBox DockPanel.Dock="Top" Margin="0,0,0,8"
+                              ItemsSource="{Binding Segments}"
+                              SelectedItem="{Binding RequestTargetSegment}"
+                              DisplayMemberPath="Name"
+                              AutomationProperties.Name="Default playlist for approved song requests"/>
+                    <ListBox ItemsSource="{Binding PendingRequests}"
+                             Background="Transparent" BorderThickness="0"
+                             AutomationProperties.Name="Pending guest song requests"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:SongRequestViewModel}">
+                                <Border Padding="8" Margin="0,2" CornerRadius="4" Background="#FF262626">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <Border DockPanel.Dock="Right" CornerRadius="3" Padding="6,1"
+                                                    Background="#FF2E9E5B" VerticalAlignment="Top" Margin="4,0,0,0"
+                                                    Visibility="{Binding HasTip, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Text="{Binding TipDisplay}" FontSize="10" FontWeight="Bold"
+                                                           Foreground="White"/>
+                                            </Border>
+                                            <Border DockPanel.Dock="Right" CornerRadius="3" Padding="6,1"
+                                                    Background="#FF7C5CFF" VerticalAlignment="Top"
+                                                    Visibility="{Binding IsPriority, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Text="VIP" FontSize="10" FontWeight="Bold"
+                                                           Foreground="White"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Display}" FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{StaticResource ForegroundBrush}"/>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding SubDisplay}" FontSize="11"
+                                                   Foreground="{StaticResource SubtleTextBrush}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                            <Button Content="Approve" MinWidth="70" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.ApproveRequestCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    AutomationProperties.Name="Approve this song request"/>
+                                            <Button Content="Reject" MinWidth="70"
+                                                    Command="{Binding DataContext.RejectRequestCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    AutomationProperties.Name="Reject this song request"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
 
         <!-- ===== Status bar + Emergency ===== -->
         <Border Grid.Row="2" Background="{StaticResource PanelBrush}" Padding="16,10">
@@ -368,6 +518,21 @@
                            HorizontalAlignment="Center" Foreground="{StaticResource ForegroundBrush}"/>
                 <TextBlock Text="Non-essential controls are disabled." HorizontalAlignment="Center"
                            Foreground="{StaticResource SubtleTextBrush}" Margin="0,8"/>
+
+                <!-- Live waveform: shows the music is still playing while locked out -->
+                <TextBlock Text="{Binding NowPlaying, TargetNullValue='Nothing playing'}"
+                           HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,8,0,4"
+                           Foreground="{StaticResource ForegroundBrush}"/>
+                <Border Width="480" Height="80" CornerRadius="6" Margin="0,0,0,4"
+                        Background="#66000000" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1"
+                        AutomationProperties.Name="Live audio waveform">
+                    <Polyline Points="{Binding WaveformPoints}"
+                              Stroke="{StaticResource AccentBrush}" StrokeThickness="1.5"
+                              StrokeLineJoin="Round"/>
+                </Border>
+                <TextBlock Text="{Binding PositionDisplay}" HorizontalAlignment="Center"
+                           Foreground="{StaticResource SubtleTextBrush}" Margin="0,0,0,8"/>
+
                 <Button Content="Release Lockout" Command="{Binding ToggleLockoutCommand}"
                         AutomationProperties.Name="Release lockout mode"
                         MinWidth="200" Margin="0,12"/>

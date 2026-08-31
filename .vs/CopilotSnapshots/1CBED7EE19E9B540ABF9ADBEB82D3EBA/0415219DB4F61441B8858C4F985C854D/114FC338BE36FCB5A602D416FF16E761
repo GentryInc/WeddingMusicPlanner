@@ -1,0 +1,62 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using WeddingMusicPlannerPro.Wpf.Services;
+
+namespace WeddingMusicPlannerPro.Wpf.ViewModels;
+
+/// <summary>
+/// ViewModel for the Settings dialog where users configure API keys for YouTube and Spotify.
+/// Changes are saved immediately to disk when the Save button is clicked.
+/// </summary>
+public partial class SettingsViewModel : ObservableObject
+{
+    private readonly ISettingsService _settings;
+
+    public SettingsViewModel(ISettingsService settings)
+    {
+        _settings = settings;
+
+        // Load current values from settings service
+        _youTubeApiKey = _settings.YouTubeApiKey ?? string.Empty;
+        _spotifyClientId = _settings.SpotifyClientId ?? string.Empty;
+        _spotifyClientSecret = _settings.SpotifyClientSecret ?? string.Empty;
+        _enablePublicRequests = _settings.EnablePublicRequests;
+    }
+
+    [ObservableProperty]
+    private string _youTubeApiKey = string.Empty;
+
+    [ObservableProperty]
+    private string _spotifyClientId = string.Empty;
+
+    [ObservableProperty]
+    private string _spotifyClientSecret = string.Empty;
+
+    [ObservableProperty]
+    private bool _enablePublicRequests;
+
+    [ObservableProperty]
+    private string _statusMessage = string.Empty;
+
+    [RelayCommand]
+    private void Save()
+    {
+        _settings.YouTubeApiKey = string.IsNullOrWhiteSpace(YouTubeApiKey) ? null : YouTubeApiKey.Trim();
+        _settings.SpotifyClientId = string.IsNullOrWhiteSpace(SpotifyClientId) ? null : SpotifyClientId.Trim();
+        _settings.SpotifyClientSecret = string.IsNullOrWhiteSpace(SpotifyClientSecret) ? null : SpotifyClientSecret.Trim();
+        _settings.EnablePublicRequests = EnablePublicRequests;
+
+        _settings.Save();
+
+        StatusMessage = "Settings saved successfully! Restart the application for changes to take effect.";
+    }
+
+    [RelayCommand]
+    private void Clear()
+    {
+        YouTubeApiKey = string.Empty;
+        SpotifyClientId = string.Empty;
+        SpotifyClientSecret = string.Empty;
+        StatusMessage = string.Empty;
+    }
+}

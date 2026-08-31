@@ -64,6 +64,28 @@ public interface IPlaybackService
     void Pause();
     void Resume();
     Task EmergencyFadeAsync(CancellationToken ct = default);
+
+    /// <summary>True while the DJ microphone is live (talkover active).</summary>
+    bool IsMicLive { get; }
+
+    /// <summary>
+    /// Toggles the DJ microphone. While live, the mic plays through the master
+    /// output device and the music is ducked to a fraction of its volume.
+    /// Returns an error message on failure (no mic, device busy), else null.
+    /// </summary>
+    string? ToggleMicrophone(string? captureDeviceId = null);
+
+    /// <summary>Active microphone (capture) devices for a device picker.</summary>
+    IReadOnlyList<(string Id, string FriendlyName)> GetMicrophoneDevices();
+
+    /// <summary>Raised when the mic goes live or off.</summary>
+    event EventHandler<bool>? MicLiveChanged;
+
+    /// <summary>
+    /// Raised ~20x/second while the master deck renders audio with the peak sample
+    /// level (0..1) of the latest block. Fired on the audio render thread.
+    /// </summary>
+    event EventHandler<float>? MasterLevelMeasured;
 }
 
 public sealed class PlaybackService : IPlaybackService, IDisposable
@@ -73,12 +95,58 @@ public sealed class PlaybackService : IPlaybackService, IDisposable
     private string? _currentTitle;
     private volatile bool _emergencyActive;
 
+    // DJ talkover: music ducks to 25% while the mic is live, then the previous
+    // fader position is restored.
+    private const float DuckFactor = 0.25f;
+    private readonly MicrophoneInput _mic = new();
+    private float _preDuckVolume = 1f;
+
     public PlaybackService(DualDeckAudioEngine engine, IOfflineCacheService cache)
     {
         _engine = engine;
         _cache = cache;
         _engine.MasterTrackCompleted += OnEngineMasterCompleted;
         _engine.Master.StateChanged += (s, e) => StateChanged?.Invoke(this, EventArgs.Empty);
+        _engine.MasterLevelMeasured += (s, level) => MasterLevelMeasured?.Invoke(this, level);
+    }
+
+    public event EventHandler<float>? MasterLevelMeasured;
+
+    public bool IsMicLive => _mic.IsLive;
+
+    public event EventHandler<bool>? MicLiveChanged;
+
+    public IReadOnlyList<(string Id, string FriendlyName)> GetMicrophoneDevices()
+    {
+        try { return MicrophoneInput.EnumerateCaptureDevices(); }
+        catch { return Array.Empty<(string, string)>(); }
+    }
+
+    public string? ToggleMicrophone(string? captureDeviceId = null)
+    {
+        try
+        {
+            if (_mic.IsLive)
+            {
+                _mic.Stop();
+                _engine.MasterVolume = _preDuckVolume;
+                MicLiveChanged?.Invoke(this, false);
+                return null;
+            }
+
+            _preDuckVolume = _engine.MasterVolume;
+            _mic.Start(captureDeviceId);
+            _engine.MasterVolume = _preDuckVolume * DuckFactor;
+            MicLiveChanged?.Invoke(this, true);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // Mic unplugged/in exclusive use: make sure music volume is restored.
+            try { _mic.Stop(); } catch { /* already stopped */ }
+            _engine.MasterVolume = _preDuckVolume;
+            return $"Microphone unavailable: {ex.Message}";
+        }
     }
 
     public string? CurrentTrackTitle => _currentTitle;
@@ -118,14 +186,62 @@ public sealed class PlaybackService : IPlaybackService, IDisposable
     {
         // Ensure the audio is on local disk first; this downloads the external stream when
         // needed so ResolveSource can hand the engine a local path rather than a remote URI.
+        //
+        // The caller often passes CancellationToken.None, so caching has no natural time
+        // bound. A stalled YouTube resolution (network hang, throttle, cipher retry) would
+        // otherwise leave the Play command's task pending forever, greying the button out
+        // with no feedback. Impose a hard ceiling so playback always resolves or reports.
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(45));
+        var cacheCt = timeoutCts.Token;
         try
         {
-            await _cache.EnsureCachedAsync(track.Id, ct).ConfigureAwait(true);
+            var localPath = await _cache.EnsureCachedAsync(track.Id, cacheCt).ConfigureAwait(true);
+
+            // The cache service persists CachedFilePath on its own DbContext copy of the
+            // track; the in-memory instance we were handed is stale. Sync it here so
+            // ResolveSource picks the freshly cached file instead of falling back to the
+            // remote URI (which the audio engine cannot play and would crash on).
+            if (localPath is not null
+                && !string.Equals(localPath, track.FilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                track.CachedFilePath = localPath;
+                track.IsCachedOffline = true;
+            }
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // Our own timeout fired (not a caller-requested cancel): report it instead of
+            // silently swallowing, so the operator sees why playback didn't start.
+            return "Timed out finding playable audio for this song (YouTube took too long to respond). Try again, or import the song file to play it locally.";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return "Cache folder permission denied. Try running as administrator or check your antivirus settings.";
+        }
+        catch (IOException ioEx)
+        {
+            return $"Cache storage error: {ioEx.Message}. Check available disk space and permissions.";
+        }
+        catch (InvalidOperationException invalidEx) when (invalidEx.Message.Contains("YouTube"))
+        {
+            // YouTube-specific errors (age-restricted, region-locked, etc.)
+            return $"Cannot play: {invalidEx.Message}";
+        }
+        catch (HttpRequestException)
+        {
+            return "Network error: Cannot download track. Check your internet connection.";
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            return ex.Message;
+            return $"Cache error: {ex.Message}";
         }
+
+        // Never hand the engine a remote-only source: Media Foundation can fail on
+        // watch-page URLs with exception types (or background-thread faults) that
+        // would crash the app rather than fail gracefully.
+        if (_cache.ResolveLocalPath(track) is null)
+            return "Couldn't find playable audio for this streaming reference (no matching YouTube result). Import the song file to play it locally.";
 
         try
         {
@@ -138,7 +254,7 @@ public sealed class PlaybackService : IPlaybackService, IDisposable
             // Fail gracefully instead of crashing the deck, but surface the real cause.
             // A remote-only source that can't be reached gets a human-readable message.
             if (_cache.ResolveLocalPath(track) is null && track.ExternalUri is not null)
-                return "couldn't find playable audio for this streaming reference (no matching YouTube result). Import the song file to play it locally.";
+                return "Couldn't find playable audio for this streaming reference (no matching YouTube result). Import the song file to play it locally.";
             return ex.Message;
         }
     }
@@ -239,5 +355,9 @@ public sealed class PlaybackService : IPlaybackService, IDisposable
         _ => FadeShape.Linear
     };
 
-    public void Dispose() => _engine.Dispose();
+    public void Dispose()
+    {
+        _mic.Dispose();
+        _engine.Dispose();
+    }
 }

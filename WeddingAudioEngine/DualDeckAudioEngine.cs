@@ -15,11 +15,18 @@ public sealed class DualDeckAudioEngine : IDisposable
     /// <summary>Raised when the master deck finishes a track (natural end or emergency fade).</summary>
     public event EventHandler? MasterTrackCompleted;
 
+    /// <summary>
+    /// Raised ~20x/second while the master deck renders audio, with the peak
+    /// sample level (0..1) of the latest block. Fired on the audio render thread.
+    /// </summary>
+    public event EventHandler<float>? MasterLevelMeasured;
+
     public DualDeckAudioEngine(IWavePlayerFactory playerFactory, IAudioSourceFactory sourceFactory)
     {
         Master = new AudioDeck(DeckRole.Master, playerFactory, sourceFactory);
         Cue = new AudioDeck(DeckRole.Cue, playerFactory, sourceFactory);
         Master.TrackCompleted += (s, e) => MasterTrackCompleted?.Invoke(this, e);
+        Master.LevelMeasured += (s, level) => MasterLevelMeasured?.Invoke(this, level);
     }
 
     /// <summary>Convenience factory using real WASAPI endpoints.</summary>

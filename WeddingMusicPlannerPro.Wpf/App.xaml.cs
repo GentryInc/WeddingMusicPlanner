@@ -32,17 +32,38 @@ public partial class App : Application
         Directory.CreateDirectory(appData);
         Directory.CreateDirectory(cacheDir);
 
+        // Load user settings from disk (API keys configured via UI)
+        var settingsService = new SettingsService();
+        settingsService.Load();
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(config =>
             {
-                // CreateDefaultBuilder only auto-loads user-secrets in the Development
-                // environment; a launched WPF app runs as Production, so load them
-                // explicitly. Env vars win last so CI/ops can override without a rebuild.
+                // Layer configuration sources:
+                // 1. Settings file (UI-configured API keys) - highest priority
+                // 2. User secrets (dev convenience)
+                // 3. Environment variables (ops/CI overrides)
+
+                // Inject settings from the UI into configuration with proper key structure
+                var settingsDict = new Dictionary<string, string?>();
+                if (!string.IsNullOrWhiteSpace(settingsService.YouTubeApiKey))
+                    settingsDict["YouTube:ApiKey"] = settingsService.YouTubeApiKey;
+                if (!string.IsNullOrWhiteSpace(settingsService.SpotifyClientId))
+                    settingsDict["Spotify:ClientId"] = settingsService.SpotifyClientId;
+                if (!string.IsNullOrWhiteSpace(settingsService.SpotifyClientSecret))
+                    settingsDict["Spotify:ClientSecret"] = settingsService.SpotifyClientSecret;
+
+                if (settingsDict.Count > 0)
+                    config.AddInMemoryCollection(settingsDict!);
+
                 config.AddUserSecrets<App>(optional: true);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices((ctx, services) =>
             {
+                // Register the pre-loaded settings service as a singleton
+                services.AddSingleton<ISettingsService>(settingsService);
+
                 services.AddDbContextFactory<WeddingMusicContext>(o => o.UseSqlite($"Data Source={dbPath}"));
 
                 // A scoped context resolved from the factory so the scoped local
@@ -85,6 +106,22 @@ public partial class App : Application
                 services.AddSingleton<ILibraryService, LibraryService>();
                 services.AddSingleton<IImportService, ImportService>();
 
+                // Wedding keepsake export: record played songs and export a playlist.
+                services.AddSingleton<IPlayHistoryService, PlayHistoryService>();
+                services.AddSingleton<IPlaylistExportService, PlaylistExportService>();
+
+                // Guest song requests: embedded LAN web server + persistence.
+                services.AddSingleton<ISongRequestService, SongRequestService>();
+                services.AddSingleton<ITipPaymentService, TipPaymentService>();
+                services.AddSingleton<RequestWebServer>();
+                services.AddSingleton<IRequestWebServer>(sp => sp.GetRequiredService<RequestWebServer>());
+                services.AddHostedService(sp => sp.GetRequiredService<RequestWebServer>());
+
+                // Optional UPnP port forwarding so off-network guests can reach the page.
+                services.AddSingleton<PortForwardingService>();
+                services.AddSingleton<IPortForwardingService>(sp => sp.GetRequiredService<PortForwardingService>());
+                services.AddHostedService(sp => sp.GetRequiredService<PortForwardingService>());
+
                 // Background worker that pre-caches upcoming timeline buckets.
                 services.AddHostedService(sp => new TimelineCacheWorker(
                     sp.GetRequiredService<IDbContextFactory<WeddingMusicContext>>(),
@@ -93,6 +130,11 @@ public partial class App : Application
                 services.AddSingleton<GlobalHotkeyService>();
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
+
+                // Settings dialog
+                services.AddTransient<SettingsViewModel>();
+                services.AddTransient<SettingsWindow>();
+                services.AddSingleton<Func<SettingsWindow>>(sp => () => sp.GetRequiredService<SettingsWindow>());
             })
             .Build();
 

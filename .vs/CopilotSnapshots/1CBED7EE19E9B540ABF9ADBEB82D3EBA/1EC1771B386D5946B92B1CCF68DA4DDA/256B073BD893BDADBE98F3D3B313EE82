@@ -1,0 +1,81 @@
+﻿using System.Diagnostics;
+using WeddingMusicSearch.Abstractions;
+
+namespace WeddingMusicSearch;
+
+/// <summary>
+/// Fans a query out to every registered <see cref="ISearchService"/> concurrently
+/// (local SQLite + Spotify + MusicBrainz + Discogs), isolates per-source failures,
+/// and merges the results. One slow or failing provider never blocks the others.
+/// </summary>
+public sealed class AggregateSearchService : ISearchService
+{
+    private readonly IReadOnlyList<ISearchService> _sources;
+    private readonly TimeSpan _perSourceTimeout;
+
+    public AggregateSearchService(IEnumerable<ISearchService> sources, TimeSpan? perSourceTimeout = null)
+    {
+        // Exclude self to avoid recursion if this is registered in the same collection.
+        _sources = sources.Where(s => s is not AggregateSearchService).ToList();
+        _perSourceTimeout = perSourceTimeout ?? TimeSpan.FromSeconds(8);
+    }
+
+    public SearchSource Source => SearchSource.Local; // aggregate identity; not meaningful
+
+    public async Task<IReadOnlyList<SearchResult>> SearchAsync(SearchQuery query, CancellationToken ct = default)
+        => (await SearchDetailedAsync(query, ct).ConfigureAwait(false)).Results;
+
+    /// <summary>Runs all sources concurrently and returns results plus per-source diagnostics.</summary>
+    public async Task<AggregateSearchResponse> SearchDetailedAsync(SearchQuery query, CancellationToken ct = default)
+    {
+        var statuses = new Dictionary<SearchSource, SourceStatus>();
+
+        var tasks = _sources.Select(async source =>
+        {
+            var sw = Stopwatch.StartNew();
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(_perSourceTimeout);
+            try
+            {
+                var results = await source.SearchAsync(query, timeoutCts.Token).ConfigureAwait(false);
+                sw.Stop();
+                return (source.Source, results, Status: new SourceStatus(true, results.Count, null, sw.Elapsed));
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                var reason = ex is OperationCanceledException && !ct.IsCancellationRequested
+                    ? "Timed out"
+                    : ex.Message;
+                return (source.Source, (IReadOnlyList<SearchResult>)Array.Empty<SearchResult>(),
+                        Status: new SourceStatus(false, 0, reason, sw.Elapsed));
+            }
+        });
+
+        var completed = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        var merged = new List<SearchResult>();
+        foreach (var (src, results, status) in completed)
+        {
+            statuses[src] = status;
+            merged.AddRange(results);
+        }
+
+        // Apply smart filters uniformly across every provider's results.
+        // "Unknown attribute = keep" so providers lacking a metric aren't dropped.
+        IEnumerable<SearchResult> filtered = SearchFilter.HasFilters(query)
+            ? merged.Where(r => SearchFilter.Matches(r, query))
+            : merged;
+
+        var ranked = filtered
+            .OrderByDescending(r => r.Relevance ?? 0)
+            .ThenBy(r => r.Title, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return new AggregateSearchResponse
+        {
+            Results = ranked,
+            SourceStatuses = statuses
+        };
+    }
+}

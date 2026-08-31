@@ -26,6 +26,9 @@ public partial class EventSegmentViewModel : ObservableObject
 
     public int SectionId { get; }
 
+    /// <summary>True when this playlist is the focused target for adding songs.</summary>
+    [ObservableProperty] private bool _isSelected;
+
     [ObservableProperty] private string _name;
     [ObservableProperty] private TransitionMode _transitionMode;
 

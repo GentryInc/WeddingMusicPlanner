@@ -1,0 +1,32 @@
+﻿namespace WeddingMusicData.Models;
+
+/// <summary>Lifecycle state of a guest song request.</summary>
+public enum SongRequestStatus
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2
+}
+
+/// <summary>
+/// A guest-submitted song request captured from the LAN request page.
+/// References an existing library <see cref="Track"/> chosen from search results.
+/// </summary>
+public class SongRequest
+{
+    public int Id { get; set; }
+
+    /// <summary>FK to the requested library track.</summary>
+    public int TrackId { get; set; }
+    public Track? Track { get; set; }
+
+    /// <summary>Optional guest display name entered on the request page.</summary>
+    public string? GuestName { get; set; }
+
+    public SongRequestStatus Status { get; set; } = SongRequestStatus.Pending;
+
+    public DateTimeOffset RequestedUtc { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>When the DJ approved or rejected the request.</summary>
+    public DateTimeOffset? ResolvedUtc { get; set; }
+}

@@ -4,6 +4,7 @@ using System.Web;
 using Microsoft.Extensions.Options;
 using WeddingMusicSearch.Abstractions;
 using WeddingMusicSearch.Infrastructure;
+using YoutubeExplode;
 
 namespace WeddingMusicSearch.Providers;
 
@@ -27,6 +28,12 @@ public sealed class YouTubeMusicSearchService : ISearchService
     private readonly YouTubeMusicOptions _options;
     private readonly RateLimiter _rateLimiter;
 
+    // Quota-free search engine. Used when no Data API key is configured, and as a
+    // fallback when the Data API call fails (bad key, quota exhausted, transient
+    // error). Constructed with its own handler so it is not affected by the shared
+    // client's headers/policies. A single instance is safe to reuse.
+    private readonly YoutubeClient _youtube = new();
+
     public YouTubeMusicSearchService(HttpClient http, IOptions<YouTubeMusicOptions> options)
     {
         _options = options.Value;
@@ -39,14 +46,81 @@ public sealed class YouTubeMusicSearchService : ISearchService
 
     public async Task<IReadOnlyList<SearchResult>> SearchAsync(SearchQuery query, CancellationToken ct = default)
     {
-        // No API key -> YouTube is simply not configured; skip gracefully.
-        if (string.IsNullOrWhiteSpace(_options.ApiKey))
-            return Array.Empty<SearchResult>();
-
-        await _rateLimiter.WaitAsync(ct).ConfigureAwait(false);
-
         var term = BuildTerm(query);
         int limit = Math.Clamp(query.Limit, 1, 50); // Data API caps maxResults at 50.
+
+        // No API key -> use the quota-free YoutubeExplode search directly instead of
+        // returning nothing. This is what makes the YouTube results populate even
+        // without a configured Data API key.
+        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+            return await SearchViaExplodeAsync(term, limit, ct).ConfigureAwait(false);
+
+        try
+        {
+            // Bound the Data API attempt so a stalled Polly retry/circuit-breaker/
+            // rate-limiter cycle cannot consume the whole per-source search budget and
+            // starve the reliable fallback below. If it doesn't answer quickly, we drop
+            // to the quota-free engine instead of letting the search time out.
+            using var apiCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            apiCts.CancelAfter(TimeSpan.FromSeconds(6));
+            return await SearchViaDataApiAsync(term, limit, apiCts.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // Data API failed or exceeded its short budget (bad/expired key, quota,
+            // referrer restriction, network, slow retries). Fall back to the quota-free
+            // engine so the operator still gets results.
+            return await SearchViaExplodeAsync(term, limit, ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Quota-free YouTube search via YoutubeExplode; needs no API key.</summary>
+    private async Task<IReadOnlyList<SearchResult>> SearchViaExplodeAsync(string term, int limit, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+            return Array.Empty<SearchResult>();
+
+        var results = new List<SearchResult>();
+        try
+        {
+            await foreach (var video in _youtube.Search.GetVideosAsync(term, ct).ConfigureAwait(false))
+            {
+                results.Add(new SearchResult
+                {
+                    Source = SearchSource.YouTube,
+                    ExternalId = video.Id.Value,
+                    Title = video.Title,
+                    Artist = video.Author.ChannelTitle,
+                    DurationMs = video.Duration.HasValue
+                        ? (long)video.Duration.Value.TotalMilliseconds
+                        : null,
+                    ArtworkUrl = video.Thumbnails
+                        .OrderByDescending(t => t.Resolution.Area)
+                        .FirstOrDefault()?.Url,
+                    Uri = $"https://www.youtube.com/watch?v={video.Id.Value}",
+                    Relevance = results.Count == 0 ? 1.0 : Math.Max(0.0, 1.0 - results.Count / (double)limit)
+                });
+
+                if (results.Count >= limit)
+                    break;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"YouTube search failed: {ex.Message}", ex);
+        }
+
+        return results;
+    }
+
+    /// <summary>YouTube Data API v3 search (Music category); requires an API key.</summary>
+    private async Task<IReadOnlyList<SearchResult>> SearchViaDataApiAsync(string term, int limit, CancellationToken ct)
+    {
+        await _rateLimiter.WaitAsync(ct).ConfigureAwait(false);
 
         var qs = HttpUtility.ParseQueryString(string.Empty);
         qs["part"] = "snippet";

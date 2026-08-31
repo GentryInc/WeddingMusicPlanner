@@ -1,5 +1,5 @@
 ﻿WeddingMusicPlannerPro.Wpf
-1.0.0.0
+
 
 winexe
 C#
@@ -12,9 +12,9 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR
 C:\Users\corwy\OneDrive\Documents\WeddingMusicPlanner\WeddingMusicPlannerPro.Wpf\App.xaml
 5-845821469
 
-362067016316
+34169698040
 372119109811
 Themes\DarkHighContrast.xaml;Views\MainWindow.xaml;Views\QrCodeWindow.xaml;Views\SettingsWindow.xaml;Views\TrackEditorWindow.xaml;
 
-True
+False
 

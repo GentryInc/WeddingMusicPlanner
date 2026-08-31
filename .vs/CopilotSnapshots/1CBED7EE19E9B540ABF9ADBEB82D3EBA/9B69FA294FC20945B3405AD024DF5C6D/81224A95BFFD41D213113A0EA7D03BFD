@@ -1,0 +1,23 @@
+﻿namespace WeddingMusicPlannerPro.Wpf.Services;
+
+/// <summary>
+/// Stores and retrieves user-configurable application settings (API keys, etc.)
+/// Persisted to disk so settings survive app restarts.
+/// </summary>
+public interface ISettingsService
+{
+    /// <summary>YouTube Data API v3 key</summary>
+    string? YouTubeApiKey { get; set; }
+
+    /// <summary>Spotify Client ID</summary>
+    string? SpotifyClientId { get; set; }
+
+    /// <summary>Spotify Client Secret</summary>
+    string? SpotifyClientSecret { get; set; }
+
+    /// <summary>Saves all settings to disk</summary>
+    void Save();
+
+    /// <summary>Loads settings from disk (called on startup)</summary>
+    void Load();
+}

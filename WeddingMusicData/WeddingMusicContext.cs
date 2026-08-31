@@ -11,6 +11,10 @@ public class WeddingMusicContext : DbContext
     public DbSet<CueSettings> CueSettings => Set<CueSettings>();
     public DbSet<PlaylistSection> PlaylistSections => Set<PlaylistSection>();
     public DbSet<PlaylistItem> PlaylistItems => Set<PlaylistItem>();
+    public DbSet<SongRequest> SongRequests => Set<SongRequest>();
+    public DbSet<PlayHistory> PlayHistory => Set<PlayHistory>();
+    public DbSet<EventProfile> EventProfiles => Set<EventProfile>();
+    public DbSet<PlanningEntry> PlanningEntries => Set<PlanningEntry>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -81,6 +85,65 @@ public class WeddingMusicContext : DbContext
             e.HasOne(i => i.Track)
              .WithMany(t => t.PlaylistItems)
              .HasForeignKey(i => i.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- SongRequest ---------------------------------------------------
+        b.Entity<SongRequest>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.GuestName).HasMaxLength(128);
+            e.Property(r => r.Status).HasConversion<int>();
+
+            // Hot path: the DJ panel lists pending requests newest-first.
+            e.HasIndex(r => new { r.Status, r.RequestedUtc });
+
+            e.HasOne(r => r.Track)
+             .WithMany()
+             .HasForeignKey(r => r.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- PlayHistory ---------------------------------------------------
+        b.Entity<PlayHistory>(e =>
+        {
+            e.HasKey(h => h.Id);
+
+            // Keepsake export lists played songs chronologically.
+            e.HasIndex(h => h.PlayedUtc);
+
+            e.HasOne(h => h.Track)
+             .WithMany()
+             .HasForeignKey(h => h.TrackId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- EventProfile (CRM) -------------------------------------------
+        b.Entity<EventProfile>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Status).HasConversion<int>();
+            e.HasIndex(p => p.EventDate);
+            e.HasIndex(p => p.Status);
+
+            // Detach (SetNull) rather than cascade so deleting a playlist section
+            // does not wipe the couple's CRM profile.
+            e.HasOne(p => p.PlaylistSection)
+             .WithMany()
+             .HasForeignKey(p => p.PlaylistSectionId)
+             .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // --- PlanningEntry (CRM) ------------------------------------------
+        b.Entity<PlanningEntry>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Kind).HasConversion<int>();
+            e.HasIndex(p => new { p.EventProfileId, p.Kind, p.Position });
+
+            e.HasOne(p => p.EventProfile)
+             .WithMany(p => p.PlanningEntries)
+             .HasForeignKey(p => p.EventProfileId)
              .OnDelete(DeleteBehavior.Cascade);
         });
     }

@@ -68,6 +68,18 @@ public class Track
     /// <summary>Integrated loudness (LUFS) for normalisation, if measured.</summary>
     public double? LoudnessLufs { get; set; }
 
+    /// <summary>
+    /// Peak sample amplitude (0..1) measured across the whole file during import.
+    /// Used to derive a normalisation gain that avoids clipping.
+    /// </summary>
+    public double? PeakAmplitude { get; set; }
+
+    /// <summary>
+    /// Precomputed per-track normalisation gain in decibels (applied on playback so all
+    /// songs sit at a consistent perceived level). Zero/null means no adjustment.
+    /// </summary>
+    public double? NormalizationGainDb { get; set; }
+
     // --- Vibe / mood classification (for smart filtering) -----------------
 
     /// <summary>Curated mood/vibe tag, e.g. "Cocktail Hour", "Romantic", "Party".</summary>

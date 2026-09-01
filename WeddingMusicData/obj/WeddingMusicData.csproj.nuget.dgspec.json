@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {}
+    "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {}
   },
   "projects": {
-    "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
+    "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
+        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
         "projectName": "WeddingMusicData",
-        "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
+        "projectPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\WeddingMusicData.csproj",
         "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingMusicData\\obj\\",
+        "outputPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

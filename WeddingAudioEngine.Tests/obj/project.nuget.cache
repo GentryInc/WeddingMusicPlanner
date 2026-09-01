@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "QbNCXAwpeh0=",
+  "dgSpecHash": "N5YLUC4BlRI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine.Tests\\WeddingAudioEngine.Tests.csproj",
+  "projectFilePath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine.Tests\\WeddingAudioEngine.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.codecoverage\\17.11.1\\microsoft.codecoverage.17.11.1.nupkg.sha512",
     "C:\\Users\\corwy\\.nuget\\packages\\microsoft.net.test.sdk\\17.11.1\\microsoft.net.test.sdk.17.11.1.nupkg.sha512",

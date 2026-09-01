@@ -1366,11 +1366,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine.Tests\\WeddingAudioEngine.Tests.csproj",
+      "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine.Tests\\WeddingAudioEngine.Tests.csproj",
       "projectName": "WeddingAudioEngine.Tests",
-      "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine.Tests\\WeddingAudioEngine.Tests.csproj",
+      "projectPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine.Tests\\WeddingAudioEngine.Tests.csproj",
       "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine.Tests\\obj\\",
+      "outputPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1392,8 +1392,8 @@
           "framework": "net8.0-windows7.0",
           "targetAlias": "net8.0-windows",
           "projectReferences": {
-            "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
-              "projectPath": "C:\\Users\\corwy\\OneDrive\\Documents\\WeddingMusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj"
+            "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
+              "projectPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj"
             }
           }
         }

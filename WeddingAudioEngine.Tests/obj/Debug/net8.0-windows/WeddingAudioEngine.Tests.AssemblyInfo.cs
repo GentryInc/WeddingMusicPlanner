@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingAudioEngine.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e842e2d6ab2f46e42f53683e62a05875646c13be")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48dc6bb3ee736fbb8587c0d33d0cc8aa9f3d6c73")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingAudioEngine.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingAudioEngine.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

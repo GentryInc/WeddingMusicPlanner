@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingAudioEngine")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0+29e5ec8ddd305118964f47dc9ea59a29779b3dbf")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingAudioEngine")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingAudioEngine")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

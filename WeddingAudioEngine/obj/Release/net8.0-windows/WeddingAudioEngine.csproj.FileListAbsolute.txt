@@ -10,3 +10,16 @@ C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\obj\Release
 C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\obj\Release\net8.0-windows\refint\WeddingAudioEngine.dll
 C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.pdb
 C:\Users\corwy\Downloads\WeddingMusicPlanner-main\WeddingAudioEngine\obj\Release\net8.0-windows\ref\WeddingAudioEngine.dll
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\bin\Release\net8.0-windows\WeddingAudioEngine.deps.json
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\bin\Release\net8.0-windows\WeddingAudioEngine.dll
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\bin\Release\net8.0-windows\WeddingAudioEngine.pdb
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.csproj.AssemblyReference.cache
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.AssemblyInfoInputs.cache
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.AssemblyInfo.cs
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.csproj.CoreCompileInputs.cache
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.sourcelink.json
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.dll
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\refint\WeddingAudioEngine.dll
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.pdb
+C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\ref\WeddingAudioEngine.dll

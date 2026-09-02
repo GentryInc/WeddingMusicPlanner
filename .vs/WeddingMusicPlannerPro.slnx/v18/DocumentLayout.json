@@ -3,6 +3,9 @@
   "WorkspaceRootPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\.copilot\\plans\\plan-inno-setup-one-click-installer.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|c:\\users\\corwy\\onedrive\\desktop\\musicplanner\\weddingaudioengine\\limitersampleprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01FBB33A-BDC9-400B-0CBE-D78C74249F97}|WeddingAudioEngine\\WeddingAudioEngine.csproj|solutionrelative:weddingaudioengine\\limitersampleprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -153,6 +156,26 @@
     {
       "AbsoluteMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|c:\\users\\corwy\\onedrive\\desktop\\musicplanner\\weddingmusicplannerpro.wpf\\services\\playhistoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5750FE89-1063-9240-C266-DB65B3225026}|WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj|solutionrelative:weddingmusicplannerpro.wpf\\services\\playhistoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\AppxManifest.xml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Installer\\AppxManifest.xml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\build-msix.ps1||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Installer\\build-msix.ps1||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Installer\\README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\wedding-music-planner.iss||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Installer\\wedding-music-planner.iss||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\build-setup.ps1||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Installer\\build-setup.ps1||{3B902123-F8A7-4915-9F01-361F908088D0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -162,7 +185,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -174,7 +197,97 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
+              "Title": "plan-inno-setup-one-click-installer.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\corwy\\.copilot\\plans\\plan-inno-setup-one-click-installer.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\.copilot\\plans\\plan-inno-setup-one-click-installer.md",
+              "ToolTip": "C:\\Users\\corwy\\.copilot\\plans\\plan-inno-setup-one-click-installer.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\.copilot\\plans\\plan-inno-setup-one-click-installer.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-02T05:05:33.425Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "README.md",
+              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\README.md",
+              "RelativeDocumentMoniker": "Installer\\README.md",
+              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\README.md [Read Only]",
+              "RelativeToolTip": "Installer\\README.md [Read Only]",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-01T05:07:29.749Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "build-msix.ps1",
+              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\build-msix.ps1",
+              "RelativeDocumentMoniker": "Installer\\build-msix.ps1",
+              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\build-msix.ps1 [Read Only]",
+              "RelativeToolTip": "Installer\\build-msix.ps1 [Read Only]",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALoAAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-01T05:07:18.136Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "AppxManifest.xml",
+              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\AppxManifest.xml",
+              "RelativeDocumentMoniker": "Installer\\AppxManifest.xml",
+              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\AppxManifest.xml [Read Only]",
+              "RelativeToolTip": "Installer\\AppxManifest.xml [Read Only]",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADYAAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2026-09-01T05:06:33.064Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "LimiterSampleProvider.cs",
+              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\LimiterSampleProvider.cs",
+              "RelativeDocumentMoniker": "WeddingAudioEngine\\LimiterSampleProvider.cs",
+              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\LimiterSampleProvider.cs [Read Only]",
+              "RelativeToolTip": "WeddingAudioEngine\\LimiterSampleProvider.cs [Read Only]",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T17:27:28.515Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "build-setup.ps1",
+              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\build-setup.ps1",
+              "RelativeDocumentMoniker": "Installer\\build-setup.ps1",
+              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\build-setup.ps1 [Read Only]",
+              "RelativeToolTip": "Installer\\build-setup.ps1 [Read Only]",
+              "ViewState": "AgIAADgAAAAAAAAAAABBwMIAAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-01T05:50:17.969Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "wedding-music-planner.iss",
+              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\wedding-music-planner.iss",
+              "RelativeDocumentMoniker": "Installer\\wedding-music-planner.iss",
+              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\Installer\\wedding-music-planner.iss [Read Only]",
+              "RelativeToolTip": "Installer\\wedding-music-planner.iss [Read Only]",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEwAAAAAAAAAAQAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAR3SURBVDhPlZTfb1NlGMc/7zmnp6e/trUdbG1Zt7Fht/GjG5uF4VBmYogBYjCQeCExMfHCW/xbvDKQYIzxCoKYGBQSiIkkDhxDEJ2A29gvyuhp127lrOe8rxcty0y88Zu8eW\u002B\u002B7ydPnuf7vIIt2j86fuaDTz67IJUCpVCA2mpoSDRut\u002BYA6vNfbl49f\u002BWbc5MopYytRgWEQn6OjQ3iM/T/hL1SzXW5cuM2pdXKqf6hg5bP9H9xUQihbzUlOrqyudE3T47tzxCwTBQ6SuiELJNYJEAkaBEOWoSCFj6fwdQfMwQCgXBzc1OrYQVbovHtT/8FbEums/1DoycD21JM2y738g5Tyw73Fh1mn1VwaxuYhsBnGGzUXCYfPkbTdQSi2UWkdnT2\u002BDeBwmf54\u002Bldw4nduRMLvu1M5CUTeY\u002Bf5mtc/H2N61PLVMslmk1FNOxH1wQzC3mqVQcBWKYvXHU2cptAq3uoL5Y7/k5i5MjoYHeUfW1\u002BeloNmpp8uJbBI8dgYuoJz\u002BcXaDVddnUm2dm5g72ZTrJ93aS2xbg/PYsGQKRNhF4bO5bKHj65Jx0nGzfZEzPobfaRjui0RXSCUQsv3sLPcy/4\u002BtodFpeeI5VE03SE0EATeJ7XAIZTe81E30g0kU4nm3wEjXo0pFKoV6PWwIr4cU3Bo/wK129NUCqv4XoS1wPXVchNoD9\u002BwBeOdVoBS/OUZK7s8rjsMVvxWFyXFBxFzFCM72zm9GgvuT2dzC4/o\u002Bo4uJ7CVQpPKpSSGABCN3uaLS1m6B5/FV0eSIGhC1YdxZNSjfnVGgPhGmeHU\u002BTad7FiF7n5630M3aDm1iGelHhS1isMhb3QSIcwgxace7jGD/MO1\u002BYdri043FqqMr24woPpR/w2s8ByqQKNbfEk1KRsVAeg0DAD\u002BrtvDvfuiDfFVxaXeTqzzP05m7tzRabnnlPJL9GjF/l4OEVXk498webxUp7yepWaV4d5nsKTEuV5GGi\u002BzPiBbCKd6Qh4cxWSG89wKkGiYYuOqJ9d0SCZaBPdIcXtO5M4zkvaW2OE/BYKgZQKTyikVCilMFAyndwe9w91t4uwv4C3XmINSLQY9LWF6IiYbKyvceP2Pb66/CORcIhj42/QtTsNmo4rFULUhyKVwsDz/n7ydLEykKm4uZ6EfqA3KYSoZ2pppcCNO/c5f\u002Bkqk3cfIl9WOXpkjP7unaRSHUgpqXkKISRSSaTnIUCY6YHs2bG3jpweHBzaHY/HzUA4wt2pB0zcucf0zDw1NLqSCd4\u002BfIjhwX2kUgkMw4eSEhCYpk6lZHPpyvfogFculfLPluYny\u002BW1taZ48vXOngzhSAvtyRS7BwY4lBvhYG6EPQP9tLa2ohtGo2eglEATGs7LKg//nN78KwHI7Bs5c\u002BqjTy8cP/EehmGAkihAEwKEBqrepwap/kgIDE2jVHrB5W\u002B/a2xKQ5rQ0ISgUrQp2wXKRZtK0WbVLlAqrFCyX7BqF1gt2qyWGqdoY9sFCnapzt8K7M/mzhx9/8MvlapH4P9ICIEQgn8AYk4IKUHogaMAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-09-01T05:49:42.484Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "WeddingMusicContext.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\WeddingMusicContext.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\WeddingMusicContext.cs",
@@ -186,7 +299,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Track.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\Models\\Track.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\Models\\Track.cs",
@@ -198,7 +311,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "PlaylistExportService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\PlaylistExportService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PlaylistExportService.cs",
@@ -210,20 +323,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "LimiterSampleProvider.cs",
-              "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\LimiterSampleProvider.cs",
-              "RelativeDocumentMoniker": "WeddingAudioEngine\\LimiterSampleProvider.cs",
-              "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\LimiterSampleProvider.cs",
-              "RelativeToolTip": "WeddingAudioEngine\\LimiterSampleProvider.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-31T17:27:28.515Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "DatabaseInitializer.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\DatabaseInitializer.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\DatabaseInitializer.cs",
@@ -235,7 +335,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "EventProfile.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\Models\\EventProfile.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\Models\\EventProfile.cs",
@@ -247,7 +347,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 38,
               "Title": "PlayHistoryService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\PlayHistoryService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PlayHistoryService.cs",
@@ -259,7 +359,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 37,
               "Title": "PlayHistory.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\Models\\PlayHistory.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\Models\\PlayHistory.cs",
@@ -271,7 +371,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 36,
               "Title": "YouTubeMusicSearchService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicSearch\\Providers\\YouTubeMusicSearchService.cs",
               "RelativeDocumentMoniker": "WeddingMusicSearch\\Providers\\YouTubeMusicSearchService.cs",
@@ -283,7 +383,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "QrCodeWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml.cs",
@@ -295,7 +395,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 35,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\_ytdiag\\Program.cs",
               "RelativeDocumentMoniker": "_ytdiag\\Program.cs",
@@ -307,7 +407,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 34,
               "Title": "AggregateSearchService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicSearch\\AggregateSearchService.cs",
               "RelativeDocumentMoniker": "WeddingMusicSearch\\AggregateSearchService.cs",
@@ -319,7 +419,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 33,
               "Title": "SearchServiceRegistration.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicSearch\\SearchServiceRegistration.cs",
               "RelativeDocumentMoniker": "WeddingMusicSearch\\SearchServiceRegistration.cs",
@@ -331,18 +431,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "DarkHighContrast.xaml",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
               "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
               "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Themes\\DarkHighContrast.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-30T14:29:28.949Z"
+              "WhenOpened": "2026-08-30T14:29:28.949Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 31,
               "Title": "DualDeckAudioEngine.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\DualDeckAudioEngine.cs",
               "RelativeDocumentMoniker": "WeddingAudioEngine\\DualDeckAudioEngine.cs",
@@ -354,7 +455,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 30,
               "Title": "AudioDeck.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\AudioDeck.cs",
               "RelativeDocumentMoniker": "WeddingAudioEngine\\AudioDeck.cs",
@@ -366,18 +467,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "QrCodeWindow.xaml",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
               "ToolTip": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
               "RelativeToolTip": "WeddingMusicPlannerPro.Wpf\\Views\\QrCodeWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-30T03:41:41.124Z"
+              "WhenOpened": "2026-08-30T03:41:41.124Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 32,
               "Title": "EventSegmentViewModel.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\ViewModels\\EventSegmentViewModel.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\EventSegmentViewModel.cs",
@@ -389,7 +491,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "MicrophoneInput.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\MicrophoneInput.cs",
               "RelativeDocumentMoniker": "WeddingAudioEngine\\MicrophoneInput.cs",
@@ -401,7 +503,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "SettingsWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml.cs",
@@ -413,7 +515,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "SpotifySearchService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicSearch\\Providers\\SpotifySearchService.cs",
               "RelativeDocumentMoniker": "WeddingMusicSearch\\Providers\\SpotifySearchService.cs",
@@ -425,7 +527,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "SongRequestViewModel.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\ViewModels\\SongRequestViewModel.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\SongRequestViewModel.cs",
@@ -437,7 +539,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "SongRequestService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\SongRequestService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\SongRequestService.cs",
@@ -449,7 +551,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "TipPaymentService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\TipPaymentService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\TipPaymentService.cs",
@@ -461,7 +563,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "App.xaml.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\App.xaml.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\App.xaml.cs",
@@ -473,7 +575,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Views\\MainWindow.xaml",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\MainWindow.xaml",
@@ -484,7 +586,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 19,
               "Title": "MainViewModel.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\ViewModels\\MainViewModel.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\MainViewModel.cs",
@@ -496,7 +598,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 20,
               "Title": "SongRequest.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\Models\\SongRequest.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\Models\\SongRequest.cs",
@@ -508,7 +610,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 21,
               "Title": "PlaybackService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\PlaybackService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PlaybackService.cs",
@@ -520,7 +622,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "RequestWebServer.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\RequestWebServer.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\RequestWebServer.cs",
@@ -532,7 +634,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "SettingsWindow.xaml",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Views\\SettingsWindow.xaml",
@@ -543,7 +645,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "SettingsViewModel.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\ViewModels\\SettingsViewModel.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\SettingsViewModel.cs",
@@ -555,7 +657,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 24,
               "Title": "SettingsService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\SettingsService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\SettingsService.cs",
@@ -567,7 +669,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 25,
               "Title": "ISettingsService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\ISettingsService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\ISettingsService.cs",
@@ -579,7 +681,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 26,
               "Title": "MicDeviceViewModel.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\ViewModels\\MicDeviceViewModel.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\ViewModels\\MicDeviceViewModel.cs",
@@ -591,7 +693,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 27,
               "Title": "PortForwardingService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\Services\\PortForwardingService.cs",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\Services\\PortForwardingService.cs",
@@ -603,7 +705,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 28,
               "Title": "WeddingMusicPlannerPro.Wpf.csproj",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
               "RelativeDocumentMoniker": "WeddingMusicPlannerPro.Wpf\\WeddingMusicPlannerPro.Wpf.csproj",
@@ -615,7 +717,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 29,
               "Title": "OfflineCacheService.cs",
               "DocumentMoniker": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingMusicData\\Caching\\OfflineCacheService.cs",
               "RelativeDocumentMoniker": "WeddingMusicData\\Caching\\OfflineCacheService.cs",

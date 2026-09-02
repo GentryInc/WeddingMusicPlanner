@@ -1,0 +1,54 @@
+﻿# Installer — MSIX (one-click)
+
+Builds a **self-contained, win-x64 MSIX** package for **Wedding Music Planner Pro**
+(the `WeddingMusicPlannerPro.Wpf` app). The package bundles the .NET 8 runtime, so
+target machines do **not** need .NET installed.
+
+## Prerequisites
+
+- .NET 8 SDK
+- Windows 10/11 SDK (provides `makeappx.exe` and `signtool.exe`)
+
+## Build (one command)
+
+From the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Installer\build-msix.ps1
+```
+
+Optional parameters:
+
+```powershell
+# Custom version and auto-install locally after building
+Installer\build-msix.ps1 -Version 1.2.0.0 -Install
+```
+
+Outputs land in `artifacts\`:
+
+- `WeddingMusicPlannerPro_<version>_x64.msix` — the installer
+- `WeddingMusicPlannerPro-selfsign.pfx` — the dev signing certificate
+
+## Installing on a target machine
+
+MSIX requires the signing certificate to be trusted. For the included **dev
+self-signed cert**, run once as administrator:
+
+```powershell
+Import-Certificate -FilePath .\WeddingMusicPlannerPro-selfsign.pfx `
+	-CertStoreLocation Cert:\LocalMachine\TrustedPeople
+```
+
+Then double-click the `.msix` (or `Add-AppxPackage -Path .\WeddingMusicPlannerPro_<version>_x64.msix`).
+
+## Production signing
+
+The self-signed certificate is for development/testing only. For distribution,
+re-sign the produced `.msix` with a trusted code-signing certificate whose
+subject matches the `Publisher` in `AppxManifest.xml` (`CN=GentryInc`), or update
+both to match your certificate.
+
+## Files
+
+- `AppxManifest.xml` — package manifest template (version/publisher tokens filled by the script).
+- `build-msix.ps1` — publish → generate tile assets → pack → sign (→ optionally install).

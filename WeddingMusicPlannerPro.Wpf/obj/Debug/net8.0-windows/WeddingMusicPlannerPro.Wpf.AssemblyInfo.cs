@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingMusicPlannerPro.Wpf")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48dc6bb3ee736fbb8587c0d33d0cc8aa9f3d6c73")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+29e5ec8ddd305118964f47dc9ea59a29779b3dbf")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingMusicPlannerPro.Wpf")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingMusicPlannerPro.Wpf")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,186 @@
+﻿<#
+.SYNOPSIS
+	One-click MSIX installer builder for Wedding Music Planner Pro.
+
+.DESCRIPTION
+	Publishes the WPF app as a self-contained win-x64 build, generates the MSIX
+	tile assets, packs everything into a signed .msix using the Windows SDK tools,
+	and (optionally) installs it locally.
+
+	Run from anywhere:
+		powershell -ExecutionPolicy Bypass -File Installer\build-msix.ps1
+
+.PARAMETER Version
+	Package version (must be 4 parts, e.g. 1.0.0.0). Default: 1.0.0.0
+
+.PARAMETER Configuration
+	Build configuration. Default: Release
+
+.PARAMETER Install
+	If set, installs the produced package on this machine after building
+	(trusts the self-signed cert into LocalMachine\TrustedPeople first).
+
+.NOTES
+	Requires: .NET 8 SDK and the Windows 10/11 SDK (makeappx.exe, signtool.exe).
+#>
+[CmdletBinding()]
+param(
+	[string]$Version = "1.0.0.0",
+	[string]$Configuration = "Release",
+	[switch]$Install
+)
+
+$ErrorActionPreference = "Stop"
+
+# ---- Paths -----------------------------------------------------------------
+$RepoRoot     = Split-Path -Parent $PSScriptRoot
+$Project      = Join-Path $RepoRoot "WeddingMusicPlannerPro.Wpf\WeddingMusicPlannerPro.Wpf.csproj"
+$ManifestTpl  = Join-Path $PSScriptRoot "AppxManifest.xml"
+$StageDir     = Join-Path $RepoRoot "artifacts\msix-stage"
+$OutDir       = Join-Path $RepoRoot "artifacts"
+$AssetsDir    = Join-Path $StageDir "Assets"
+$Rid          = "win-x64"
+
+# Publisher must match the signing certificate subject exactly.
+$Publisher            = "CN=GentryInc"
+$PublisherDisplayName = "Gentry Inc"
+$MsixPath             = Join-Path $OutDir "WeddingMusicPlannerPro_$Version`_x64.msix"
+$CertPath             = Join-Path $OutDir "WeddingMusicPlannerPro-selfsign.pfx"
+$CertPassword         = "WMPP-dev"   # dev-only self-signed cert password
+
+if ($Version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+	throw "Version must be four numeric parts, e.g. 1.0.0.0 (got '$Version')."
+}
+
+Write-Host "==> Wedding Music Planner Pro - MSIX builder" -ForegroundColor Cyan
+Write-Host "    Version : $Version"
+Write-Host "    Config  : $Configuration"
+Write-Host "    Runtime : $Rid (self-contained)"
+Write-Host ""
+
+# ---- 1. Clean & publish self-contained -------------------------------------
+if (Test-Path $StageDir) { Remove-Item $StageDir -Recurse -Force }
+New-Item -ItemType Directory -Path $StageDir -Force | Out-Null
+New-Item -ItemType Directory -Path $OutDir   -Force | Out-Null
+
+Write-Host "==> Publishing self-contained $Rid build..." -ForegroundColor Cyan
+dotnet publish $Project `
+	-c $Configuration `
+	-r $Rid `
+	--self-contained true `
+	-p:PublishSingleFile=false `
+	-p:Version=$Version `
+	-o $StageDir
+if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed." }
+
+# ---- 2. Generate MSIX tile assets ------------------------------------------
+Write-Host "==> Generating tile assets..." -ForegroundColor Cyan
+Add-Type -AssemblyName System.Drawing
+New-Item -ItemType Directory -Path $AssetsDir -Force | Out-Null
+
+function New-TileImage {
+	param([string]$Path, [int]$W, [int]$H, [string]$Text)
+	$bmp = New-Object System.Drawing.Bitmap($W, $H)
+	$g   = [System.Drawing.Graphics]::FromImage($bmp)
+	$g.SmoothingMode     = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+	$g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAlias
+	$bg = [System.Drawing.Color]::FromArgb(255, 123, 44, 191)   # deep purple
+	$g.Clear($bg)
+	if ($Text) {
+		$fontSize = [Math]::Max(8, [int]([Math]::Min($W, $H) * 0.38))
+		$font = New-Object System.Drawing.Font("Segoe UI", $fontSize, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+		$sf = New-Object System.Drawing.StringFormat
+		$sf.Alignment     = [System.Drawing.StringAlignment]::Center
+		$sf.LineAlignment = [System.Drawing.StringAlignment]::Center
+		$brush = [System.Drawing.Brushes]::White
+		$g.DrawString($Text, $font, $brush, (New-Object System.Drawing.RectangleF(0, 0, $W, $H)), $sf)
+		$font.Dispose(); $sf.Dispose()
+	}
+	$g.Dispose()
+	$bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
+	$bmp.Dispose()
+}
+
+New-TileImage (Join-Path $AssetsDir "Square44x44Logo.png")   44   44  "W"
+New-TileImage (Join-Path $AssetsDir "Square71x71Logo.png")   71   71  "W"
+New-TileImage (Join-Path $AssetsDir "Square150x150Logo.png") 150 150  "WM"
+New-TileImage (Join-Path $AssetsDir "Square310x310Logo.png") 310 310  "WM"
+New-TileImage (Join-Path $AssetsDir "Wide310x150Logo.png")   310 150  "WMPP"
+New-TileImage (Join-Path $AssetsDir "StoreLogo.png")          50  50  "W"
+
+# ---- 3. Materialize the manifest -------------------------------------------
+Write-Host "==> Writing AppxManifest.xml..." -ForegroundColor Cyan
+$manifest = Get-Content $ManifestTpl -Raw
+$manifest = $manifest.Replace("{VERSION}", $Version)
+$manifest = $manifest.Replace("{PUBLISHER}", $Publisher)
+$manifest = $manifest.Replace("{PUBLISHER_DISPLAY_NAME}", $PublisherDisplayName)
+Set-Content -Path (Join-Path $StageDir "AppxManifest.xml") -Value $manifest -Encoding UTF8
+
+# ---- 4. Locate Windows SDK tools -------------------------------------------
+function Find-SdkTool([string]$name) {
+	$roots = @("${env:ProgramFiles(x86)}\Windows Kits\10\bin", "${env:ProgramFiles}\Windows Kits\10\bin")
+	foreach ($root in $roots) {
+		if (Test-Path $root) {
+			$found = Get-ChildItem -Path $root -Recurse -Filter $name -ErrorAction SilentlyContinue |
+					 Where-Object { $_.FullName -match '\\x64\\' } |
+					 Sort-Object FullName -Descending | Select-Object -First 1
+			if ($found) { return $found.FullName }
+		}
+	}
+	$cmd = Get-Command $name -ErrorAction SilentlyContinue
+	if ($cmd) { return $cmd.Source }
+	throw "Could not find $name. Install the Windows 10/11 SDK."
+}
+
+$MakeAppx = Find-SdkTool "makeappx.exe"
+$SignTool = Find-SdkTool "signtool.exe"
+Write-Host "    makeappx: $MakeAppx"
+Write-Host "    signtool: $SignTool"
+
+# ---- 5. Pack the MSIX ------------------------------------------------------
+Write-Host "==> Packing MSIX..." -ForegroundColor Cyan
+if (Test-Path $MsixPath) { Remove-Item $MsixPath -Force }
+& $MakeAppx pack /o /d $StageDir /p $MsixPath
+if ($LASTEXITCODE -ne 0) { throw "makeappx pack failed." }
+
+# ---- 6. Ensure a self-signed signing certificate ---------------------------
+Write-Host "==> Ensuring signing certificate ($Publisher)..." -ForegroundColor Cyan
+$cert = Get-ChildItem Cert:\CurrentUser\My |
+		Where-Object { $_.Subject -eq $Publisher } |
+		Sort-Object NotAfter -Descending | Select-Object -First 1
+if (-not $cert) {
+	$cert = New-SelfSignedCertificate `
+		-Type Custom `
+		-Subject $Publisher `
+		-KeyUsage DigitalSignature `
+		-FriendlyName "Wedding Music Planner Pro (dev signing)" `
+		-CertStoreLocation "Cert:\CurrentUser\My" `
+		-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+	Write-Host "    Created new self-signed cert: $($cert.Thumbprint)"
+}
+$sec = ConvertTo-SecureString -String $CertPassword -Force -AsPlainText
+Export-PfxCertificate -Cert $cert -FilePath $CertPath -Password $sec | Out-Null
+
+# ---- 7. Sign the MSIX ------------------------------------------------------
+Write-Host "==> Signing MSIX..." -ForegroundColor Cyan
+& $SignTool sign /fd SHA256 /a /f $CertPath /p $CertPassword $MsixPath
+if ($LASTEXITCODE -ne 0) { throw "signtool sign failed." }
+
+Write-Host ""
+Write-Host "==> Done." -ForegroundColor Green
+Write-Host "    Package : $MsixPath"
+Write-Host "    Cert    : $CertPath (password: $CertPassword)"
+Write-Host ""
+
+# ---- 8. Optional local install ---------------------------------------------
+if ($Install) {
+	Write-Host "==> Installing locally (requires admin to trust the cert)..." -ForegroundColor Cyan
+	Import-Certificate -FilePath $CertPath -CertStoreLocation "Cert:\LocalMachine\TrustedPeople" | Out-Null
+	Add-AppxPackage -Path $MsixPath
+	Write-Host "    Installed. Launch it from the Start menu." -ForegroundColor Green
+} else {
+	Write-Host "To install on a target machine:" -ForegroundColor Yellow
+	Write-Host "  1. Trust the certificate (one time, as admin):"
+	Write-Host "       Import-Certificate -FilePath '$CertPath' -CertStoreLocation Cert:\LocalMachine\TrustedPeople"
+	Write-Host "  2. Double-click '$MsixPath' (or run: Add-AppxPackage -Path '$MsixPath')."
+}

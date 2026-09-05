@@ -87,6 +87,12 @@ public class SettingsService : ISettingsService
         set => _settings.PayPalSandbox = value;
     }
 
+    public string? TunnelSubdomain
+    {
+        get => _settings.TunnelSubdomain;
+        set => _settings.TunnelSubdomain = value;
+    }
+
     public void Save()
     {
         var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
@@ -126,5 +132,6 @@ public class SettingsService : ISettingsService
         public string? PayPalClientId { get; set; }
         public string? PayPalClientSecret { get; set; }
         public bool PayPalSandbox { get; set; }
+        public string? TunnelSubdomain { get; set; }
     }
 }

@@ -49,6 +49,14 @@ public interface ISettingsService
     /// <summary>True to use the PayPal sandbox environment instead of live.</summary>
     bool PayPalSandbox { get; set; }
 
+    /// <summary>
+    /// Optional custom subdomain for the localhost.run public tunnel (e.g. "mywedding"
+    /// gives https://mywedding.lhr.life). Requires a free localhost.run account with an
+    /// SSH key registered. When empty, a random subdomain is assigned each time the
+    /// tunnel reconnects.
+    /// </summary>
+    string? TunnelSubdomain { get; set; }
+
     /// <summary>Saves all settings to disk</summary>
     void Save();
 

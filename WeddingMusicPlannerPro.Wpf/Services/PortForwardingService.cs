@@ -108,6 +108,22 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
     private async Task RunTunnelAsync(CancellationToken ct)
     {
         Status = "Router UPnP unavailable \u2014 opening a public tunnel instead\u2026";
+
+        // Build the SSH remote-forward argument. With a custom subdomain (requires a
+        // free localhost.run account + registered SSH key) the URL is stable across
+        // reconnects; without one, localhost.run assigns a random subdomain each time.
+        var subdomain = _settings.TunnelSubdomain?.Trim();
+        string remoteForward;
+        if (!string.IsNullOrWhiteSpace(subdomain))
+        {
+            // e.g. -R mywedding:80:127.0.0.1:8420  →  https://mywedding.lhr.life
+            remoteForward = $"-R {subdomain}:80:127.0.0.1:{Port}";
+        }
+        else
+        {
+            remoteForward = $"-R 80:127.0.0.1:{Port}";
+        }
+
         Process process;
         try
         {
@@ -118,7 +134,7 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
                     FileName = "ssh",
                     Arguments = "-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 " +
                                 "-o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -T " +
-                                $"-R 80:127.0.0.1:{Port} nokey@localhost.run",
+                                $"{remoteForward} nokey@localhost.run",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

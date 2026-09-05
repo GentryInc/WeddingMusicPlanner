@@ -135,22 +135,47 @@ using System.IO;
 class IconGen {
     static void Main(string[] args) {
         string outPath = args[0];
-        using (var bmp = new Bitmap(32, 32))
+
+        // Render to a 32x32 bitmap
+        using var bmp = new Bitmap(32, 32);
         using (var g = Graphics.FromImage(bmp))
         {
             g.Clear(Color.FromArgb(255, 123, 44, 191)); // purple
-            using (var font = new Font("Segoe UI", 18, FontStyle.Bold, GraphicsUnit.Pixel))
-            using (var sf = new StringFormat())
-            {
-                sf.Alignment = StringAlignment.Center;
-                sf.LineAlignment = StringAlignment.Center;
-                g.DrawString("W", font, Brushes.White, new RectangleF(0, 0, 32, 32), sf);
-            }
-            using (var fs = new FileStream(outPath, FileMode.Create))
-            {
-                bmp.Save(fs, ImageFormat.Icon);
-            }
+            using var font = new Font("Segoe UI", 18, FontStyle.Bold, GraphicsUnit.Pixel);
+            using var sf = new StringFormat();
+            sf.Alignment = StringAlignment.Center;
+            sf.LineAlignment = StringAlignment.Center;
+            g.DrawString("W", font, Brushes.White, new RectangleF(0, 0, 32, 32), sf);
         }
+
+        // Save as PNG into a memory stream
+        using var pngMs = new MemoryStream();
+        bmp.Save(pngMs, ImageFormat.Png);
+        byte[] pngBytes = pngMs.ToArray();
+
+        // Wrap PNG bytes in an ICO container
+        using var fs = new FileStream(outPath, FileMode.Create);
+        using var w = new BinaryWriter(fs);
+
+        // ICONDIR (6 bytes)
+        w.Write((ushort)0);              // Reserved
+        w.Write((ushort)1);              // Type = ICO
+        w.Write((ushort)1);              // Image count
+
+        // ICONDIRENTRY (16 bytes)
+        w.Write((byte)32);               // Width
+        w.Write((byte)32);               // Height
+        w.Write((byte)0);                // Color count
+        w.Write((byte)0);                // Reserved
+        w.Write((ushort)1);              // Planes
+        w.Write((ushort)32);             // Bit count
+        w.Write((uint)pngBytes.Length);  // Image data size
+        w.Write((uint)22);               // Offset to image data (6 + 16)
+
+        // PNG data
+        w.Write(pngBytes);
+        w.Flush();
+
         Console.WriteLine("Icon saved to " + outPath);
     }
 }

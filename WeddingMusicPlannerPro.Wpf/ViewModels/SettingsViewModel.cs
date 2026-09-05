@@ -30,6 +30,7 @@ public partial class SettingsViewModel : ObservableObject
         _payPalClientId = _settings.PayPalClientId ?? string.Empty;
         _payPalClientSecret = _settings.PayPalClientSecret ?? string.Empty;
         _payPalSandbox = _settings.PayPalSandbox;
+        _tunnelSubdomain = _settings.TunnelSubdomain ?? string.Empty;
     }
 
     [ObservableProperty]
@@ -61,6 +62,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _payPalSandbox;
+
+    [ObservableProperty]
+    private string _tunnelSubdomain = string.Empty;
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
@@ -95,6 +99,7 @@ public partial class SettingsViewModel : ObservableObject
         _settings.PayPalClientId = string.IsNullOrWhiteSpace(PayPalClientId) ? null : PayPalClientId.Trim();
         _settings.PayPalClientSecret = string.IsNullOrWhiteSpace(PayPalClientSecret) ? null : PayPalClientSecret.Trim();
         _settings.PayPalSandbox = PayPalSandbox;
+        _settings.TunnelSubdomain = string.IsNullOrWhiteSpace(TunnelSubdomain) ? null : TunnelSubdomain.Trim().ToLowerInvariant();
 
         _settings.Save();
 

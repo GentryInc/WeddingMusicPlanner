@@ -142,6 +142,25 @@
                            Margin="0,0,0,12"
                            Text="Share this password with the bride (or anyone who should skip the queue). Requests submitted with it on the guest page are marked VIP, jump to the front, and are approved automatically. Leave empty to disable."/>
 
+                <TextBlock Text="Tunnel Subdomain (optional):"
+                           Foreground="{StaticResource ForegroundBrush}"
+                           Margin="0,0,0,4"/>
+
+                <TextBox Text="{Binding TunnelSubdomain, UpdateSourceTrigger=PropertyChanged}"
+                         Background="{StaticResource PanelBrush}"
+                         Foreground="{StaticResource ForegroundBrush}"
+                         BorderBrush="{StaticResource AccentBrush}"
+                         Padding="8"
+                         FontFamily="Consolas"
+                         Margin="0,0,0,4"
+                         ToolTip="e.g. mywedding"/>
+
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{StaticResource SubtleTextBrush}"
+                           FontSize="12"
+                           Margin="0,0,0,12"
+                           Text="Reserve a free custom subdomain at localhost.run (register an SSH key there, e.g. 'mywedding') so the public link stays the same every time: https://yoursubdomain.lhr.life. Without this, a random URL is assigned each time the tunnel reconnects. Leave empty for a random address."/>
+
                 <!-- DJ Tipping Section -->
                 <TextBlock Text="DJ Tipping (Stripe &amp; PayPal)"
                            FontSize="18"

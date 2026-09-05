@@ -159,7 +159,7 @@
                            Foreground="{StaticResource SubtleTextBrush}"
                            FontSize="12"
                            Margin="0,0,0,12"
-                           Text="Reserve a free custom subdomain at localhost.run (register an SSH key there, e.g. 'mywedding') so the public link stays the same every time: https://yoursubdomain.lhr.life. Without this, a random URL is assigned each time the tunnel reconnects. Leave empty for a random address."/>
+                           Text="For a stable public link that never changes, register a free subdomain at https://admin.localhost.run (add your SSH key, pick a name like 'mywedding'), then enter that name here. Your link will always be https://mywedding.lhr.rocks. Without this, a random URL is assigned each time the tunnel reconnects. Leave empty for a random address."/>
 
                 <!-- DJ Tipping Section -->
                 <TextBlock Text="DJ Tipping (Stripe &amp; PayPal)"

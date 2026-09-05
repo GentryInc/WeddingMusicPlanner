@@ -87,7 +87,16 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
             {
                 await RunTunnelAsync(stoppingToken).ConfigureAwait(false);
                 if (stoppingToken.IsCancellationRequested) return;
-                // Tunnel exited/failed: loop back and retry both paths.
+
+                // If the tunnel was live and died, restart it quickly to get
+                // the same URL back (localhost.run keeps the assignment for a
+                // short window after disconnect).
+                if (!IsForwarded)
+                {
+                    delay = TimeSpan.FromSeconds(3);
+                    continue;
+                }
+                return;
             }
 
             try { await Task.Delay(delay, stoppingToken).ConfigureAwait(false); }
@@ -110,23 +119,23 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
     {
         Status = "Router UPnP unavailable \u2014 opening a public tunnel instead\u2026";
 
-        // Build the SSH remote-forward argument. With a custom subdomain (requires a
-        // free localhost.run account + registered SSH key) the URL is stable across
-        // reconnects; without one, localhost.run assigns a random subdomain each time.
+        // Build the SSH remote-forward argument. With a custom subdomain the URL is
+        // stable across reconnects; without one, localhost.run assigns a random one.
         var subdomain = _settings.TunnelSubdomain?.Trim();
         string remoteForward;
-        string sshUser;
+        string sshTarget;
         if (!string.IsNullOrWhiteSpace(subdomain))
         {
-            // Custom subdomain: requires the user's own SSH key registered at localhost.run.
-            // Use the default SSH key (no "nokey" prefix) so the agent/key is used.
+            // Custom subdomain on lhr.rocks: uses your registered SSH key for auth.
+            // e.g. ssh -R mywedding:80:127.0.0.1:8420 plan@localhost.run
             remoteForward = $"-R {subdomain}:80:127.0.0.1:{Port}";
-            sshUser = "localhost.run";
+            sshTarget = "plan@localhost.run";
         }
         else
         {
+            // Anonymous: random subdomain, no key needed.
             remoteForward = $"-R 80:127.0.0.1:{Port}";
-            sshUser = "nokey@localhost.run";
+            sshTarget = "nokey@localhost.run";
         }
 
         Process process;
@@ -139,7 +148,7 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
                     FileName = "ssh",
                     Arguments = "-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 " +
                                 "-o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -T " +
-                                $"{remoteForward} {sshUser}",
+                                $"{remoteForward} {sshTarget}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -166,7 +175,8 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
 
             // localhost.run prints the assigned public URL on stdout AND/OR stderr.
             // Read both streams concurrently so we don't miss it.
-            var urlRegex = new Regex(@"https://[\w.-]+\.lhr\.life", RegexOptions.Compiled);
+            // Matches both random (.lhr.life) and custom (.lhr.rocks) tunnel domains.
+            var urlRegex = new Regex(@"https://[\w.-]+\.(?:lhr\.life|lhr\.rocks)", RegexOptions.Compiled);
             var urlFound = new TaskCompletionSource<bool>();
 
             async Task ReadStreamAsync(StreamReader reader)

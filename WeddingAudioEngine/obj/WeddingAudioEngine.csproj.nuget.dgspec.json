@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {}
+    "D:\\MyProjects\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {}
   },
   "projects": {
-    "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
+    "D:\\MyProjects\\WeddingAudioEngine\\WeddingAudioEngine.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
+        "projectUniqueName": "D:\\MyProjects\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
         "projectName": "WeddingAudioEngine",
-        "projectPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
-        "packagesPath": "C:\\Users\\corwy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\corwy\\OneDrive\\Desktop\\MusicPlanner\\WeddingAudioEngine\\obj\\",
+        "projectPath": "D:\\MyProjects\\WeddingAudioEngine\\WeddingAudioEngine.csproj",
+        "packagesPath": "C:\\Users\\jackp\\.nuget\\packages\\",
+        "outputPath": "D:\\MyProjects\\WeddingAudioEngine\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\corwy\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\jackp\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -29,8 +25,7 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net8.0-windows": {
-            "framework": "net8.0-windows7.0",
+          "net8.0-windows7.0": {
             "targetAlias": "net8.0-windows",
             "projectReferences": {}
           }
@@ -44,12 +39,10 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.400"
+        }
       },
       "frameworks": {
-        "net8.0-windows": {
-          "framework": "net8.0-windows7.0",
+        "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
             "NAudio": {
@@ -68,12 +61,31 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[8.0.30, 8.0.30]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[8.0.30, 8.0.30]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[8.0.30, 8.0.30]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.424/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
         }
       }
     }

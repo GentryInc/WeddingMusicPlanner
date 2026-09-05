@@ -1,0 +1,52 @@
+# Installer — Windows Setup (one-click)
+
+Produces a single **WeddingMusicPlannerPro_Setup_\<version\>.exe** for
+**Wedding Music Planner Pro** using Inno Setup 6.
+
+End users **just double-click the Setup exe** — no prerequisites,
+no certificate steps, no manual commands required.
+
+The app is self-contained (bundles .NET 8), so target machines do
+**not** need .NET installed.
+
+## Developer prerequisite
+
+Only the **.NET 8 SDK** is needed on the build machine. Inno Setup 6 is
+downloaded and installed silently by the script if not already present.
+
+## Build (one command)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Installer\build-setup.ps1
+```
+
+With a specific version:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Installer\build-setup.ps1 -Version 1.2.0
+```
+
+Output: `artifacts\WeddingMusicPlannerPro_Setup_<version>.exe`
+
+## What the Setup exe does for end users
+
+1. Standard install wizard (Welcome → Directory → Icons → Install → Finish)
+2. Installs to `%LOCALAPPDATA%\Programs\Wedding Music Planner Pro\` (per-user, **no admin required**)
+3. Creates a Start Menu shortcut
+4. Optional Desktop shortcut (checkbox, off by default)
+5. Adds an Add/Remove Programs entry with proper icon and metadata
+6. Detects if the app is currently running and prompts to close it
+7. Offers to launch the app immediately after install
+8. On uninstall: optionally asks to remove personal data (database, settings, cache)
+
+## Upgrade / reinstall
+
+Running the Setup exe again when a previous version is installed performs a
+clean upgrade — files are overwritten, user data is preserved, and the
+uninstaller entry is updated to the new version.
+
+## Files
+
+- `wedding-music-planner.iss` — Inno Setup script
+- `build-setup.ps1` — one-click build script
+- `AppIcon.ico` — auto-generated placeholder if absent; replace with real icon

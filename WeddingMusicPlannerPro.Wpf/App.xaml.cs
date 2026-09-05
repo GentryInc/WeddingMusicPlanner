@@ -17,11 +17,26 @@ namespace WeddingMusicPlannerPro.Wpf;
 
 public partial class App : Application
 {
+    private static Mutex? _singleInstanceMutex;
     private IHost? _host;
     private GlobalHotkeyService? _hotkeys;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Single-instance guard — the Inno Setup installer uses this mutex name
+        // to detect a running instance before installing/upgrading.
+        _singleInstanceMutex = new Mutex(true, "WeddingMusicPlannerPro_SingleInstance", out var isNew);
+        if (!isNew)
+        {
+            MessageBox.Show(
+                "Wedding Music Planner Pro is already running.",
+                "Already Running",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            Shutdown();
+            return;
+        }
+
         base.OnStartup(e);
 
         var appData = Path.Combine(
@@ -165,11 +180,11 @@ public partial class App : Application
         _hotkeys?.Dispose();
         if (_host is not null)
         {
-            // Dispose the audio engine cleanly (stops WASAPI, releases streams).
-            _host.Services.GetService<IPlaybackService>()?.GetType();
             await _host.StopAsync();
             _host.Dispose();
         }
+        _singleInstanceMutex?.ReleaseMutex();
+        _singleInstanceMutex?.Dispose();
         base.OnExit(e);
     }
 }

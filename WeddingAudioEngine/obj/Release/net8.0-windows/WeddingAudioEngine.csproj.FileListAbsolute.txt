@@ -23,3 +23,16 @@ C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8
 C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\refint\WeddingAudioEngine.dll
 C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.pdb
 C:\Users\corwy\OneDrive\Desktop\MusicPlanner\WeddingAudioEngine\obj\Release\net8.0-windows\ref\WeddingAudioEngine.dll
+D:\MyProjects\WeddingAudioEngine\bin\Release\net8.0-windows\WeddingAudioEngine.deps.json
+D:\MyProjects\WeddingAudioEngine\bin\Release\net8.0-windows\WeddingAudioEngine.dll
+D:\MyProjects\WeddingAudioEngine\bin\Release\net8.0-windows\WeddingAudioEngine.pdb
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.csproj.AssemblyReference.cache
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.GeneratedMSBuildEditorConfig.editorconfig
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.AssemblyInfoInputs.cache
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.AssemblyInfo.cs
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.csproj.CoreCompileInputs.cache
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.sourcelink.json
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.dll
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\refint\WeddingAudioEngine.dll
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\WeddingAudioEngine.pdb
+D:\MyProjects\WeddingAudioEngine\obj\Release\net8.0-windows\ref\WeddingAudioEngine.dll

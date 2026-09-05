@@ -45,7 +45,7 @@ namespace WeddingMusicPlannerPro.Wpf {
         /// InitializeComponent
         /// </summary>
         [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "10.0.11.0")]
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "8.0.30.0")]
         public void InitializeComponent() {
             if (_contentLoaded) {
                 return;
@@ -65,7 +65,7 @@ namespace WeddingMusicPlannerPro.Wpf {
         /// </summary>
         [System.STAThreadAttribute()]
         [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "10.0.11.0")]
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "8.0.30.0")]
         public static void Main() {
             WeddingMusicPlannerPro.Wpf.App app = new WeddingMusicPlannerPro.Wpf.App();
             app.InitializeComponent();

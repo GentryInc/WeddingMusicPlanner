@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WeddingMusicSearch")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0+29e5ec8ddd305118964f47dc9ea59a29779b3dbf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5a3e102ca97106d6835b9b2f92069256e9c77e3a")]
 [assembly: System.Reflection.AssemblyProductAttribute("WeddingMusicSearch")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WeddingMusicSearch")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

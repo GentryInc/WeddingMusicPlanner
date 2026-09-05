@@ -74,6 +74,22 @@ public partial class MainViewModel : ObservableObject
                 await _playback.EmergencyFadeAsync().ConfigureAwait(true);
             });
 
+        // Bride's VIP pause from the request page.
+        _requestServer.PauseRequested += (_, _) =>
+            Application.Current?.Dispatcher.InvokeAsync(() =>
+            {
+                _playback.Pause();
+                StatusMessage = "VIP pause requested";
+            });
+
+        // Bride's VIP play/resume from the request page.
+        _requestServer.PlayRequested += (_, _) =>
+            Application.Current?.Dispatcher.InvokeAsync(() =>
+            {
+                _playback.Resume();
+                StatusMessage = "VIP play requested";
+            });
+
         // Playhead poll runs for the app lifetime; position/duration read as zero when
         // idle, so this stays cheap and needs no start/stop coupling to transport state.
         StartPlayheadTimer();

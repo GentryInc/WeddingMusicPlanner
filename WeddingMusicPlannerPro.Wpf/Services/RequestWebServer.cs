@@ -25,6 +25,12 @@ public interface IRequestWebServer
 
     /// <summary>Raised when the bride submits a valid VIP skip-to-next-song request.</summary>
     event EventHandler? SkipRequested;
+
+    /// <summary>Raised when the bride submits a valid VIP pause request.</summary>
+    event EventHandler? PauseRequested;
+
+    /// <summary>Raised when the bride submits a valid VIP play/resume request.</summary>
+    event EventHandler? PlayRequested;
 }
 
 public sealed class RequestWebServer : BackgroundService, IRequestWebServer
@@ -49,6 +55,8 @@ public sealed class RequestWebServer : BackgroundService, IRequestWebServer
     public bool IsRunning { get; private set; }
 
     public event EventHandler? SkipRequested;
+    public event EventHandler? PauseRequested;
+    public event EventHandler? PlayRequested;
 
     public string RequestUrl => $"http://{GetLanIPv4()}:{Port}/";
 
@@ -135,6 +143,36 @@ public sealed class RequestWebServer : BackgroundService, IRequestWebServer
             }
 
             SkipRequested?.Invoke(this, EventArgs.Empty);
+            return Results.Ok();
+        });
+
+        // VIP-only: pause playback. Requires the bride password.
+        _app.MapPost("/api/pause", (SkipDto dto) =>
+        {
+            var expected = _settings.BridePassword;
+            if (string.IsNullOrWhiteSpace(dto.VipPassword) ||
+                string.IsNullOrWhiteSpace(expected) ||
+                !string.Equals(dto.VipPassword.Trim(), expected.Trim(), StringComparison.Ordinal))
+            {
+                return Results.Unauthorized();
+            }
+
+            PauseRequested?.Invoke(this, EventArgs.Empty);
+            return Results.Ok();
+        });
+
+        // VIP-only: resume/play playback. Requires the bride password.
+        _app.MapPost("/api/play", (SkipDto dto) =>
+        {
+            var expected = _settings.BridePassword;
+            if (string.IsNullOrWhiteSpace(dto.VipPassword) ||
+                string.IsNullOrWhiteSpace(expected) ||
+                !string.Equals(dto.VipPassword.Trim(), expected.Trim(), StringComparison.Ordinal))
+            {
+                return Results.Unauthorized();
+            }
+
+            PlayRequested?.Invoke(this, EventArgs.Empty);
             return Results.Ok();
         });
 
@@ -348,7 +386,11 @@ public sealed class RequestWebServer : BackgroundService, IRequestWebServer
   <h1>&#127925; Request a Song</h1>
   <input id="name" placeholder="Your name (optional)" maxlength="128">
   <input id="vip" type="password" placeholder="VIP password (optional)" maxlength="64" autocomplete="off">
-  <button id="skip" style="width:100%; margin-bottom:10px; background:#b8478f;">&#9193; VIP: Skip to next song</button>
+  <button id="skip" style="width:100%; margin-bottom:6px; background:#b8478f;">&#9193; VIP: Skip to next song</button>
+  <div style="display:flex; gap:8px; margin-bottom:10px;">
+    <button id="pause" style="flex:1; background:#e67e22;">&#9208; VIP: Pause</button>
+    <button id="play" style="flex:1; background:#27ae60;">&#9654; VIP: Play</button>
+  </div>
   <input id="q" placeholder="Search songs or artists&hellip;" autofocus>
   <div id="results"></div>
   <div id="status"></div>
@@ -381,31 +423,35 @@ public sealed class RequestWebServer : BackgroundService, IRequestWebServer
     timer = setTimeout(search, 300);
   });
 
-  document.getElementById('skip').addEventListener('click', async () => {
+  async function vipAction(endpoint, label) {
     const vip = document.getElementById('vip').value.trim();
     if (!vip) {
-      status.textContent = 'Enter the VIP password to skip songs.';
+      status.textContent = 'Enter the VIP password to ' + label + '.';
       status.className = 'err';
       return;
     }
     try {
-      const res = await fetch('/api/skip', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vipPassword: vip })
       });
       if (res.ok) {
-        status.textContent = 'Skipping to the next song\u2026';
+        status.textContent = label.charAt(0).toUpperCase() + label.slice(1) + ' command sent \u2014 DJ software is responding\u2026';
         status.className = 'ok';
       } else if (res.status === 401) {
         status.textContent = 'Wrong VIP password \u2014 check it and try again.';
         status.className = 'err';
       } else { throw new Error(); }
     } catch {
-      status.textContent = 'Could not send the skip request. Try again.';
+      status.textContent = 'Could not send the ' + label + ' request. Try again.';
       status.className = 'err';
     }
-  });
+  }
+
+  document.getElementById('skip').addEventListener('click', () => vipAction('/api/skip', 'skip'));
+  document.getElementById('pause').addEventListener('click', () => vipAction('/api/pause', 'pause'));
+  document.getElementById('play').addEventListener('click', () => vipAction('/api/play', 'play'));
 
   async function search() {
     const term = q.value.trim();

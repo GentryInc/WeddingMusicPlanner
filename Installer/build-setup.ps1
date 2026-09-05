@@ -121,106 +121,71 @@ if (-not (Test-Path $IconPath)) {
 	Write-Host ""
 	Write-Host "==> No AppIcon.ico found - generating a placeholder icon..." -ForegroundColor Yellow
 
-	# Build a minimal valid ICO: 32x32 32bpp, purple with white "W"
-	$imgSize = 32
-	$pixels  = [byte[]]::new($imgSize * $imgSize * 4)
+	# Use a tiny C# helper to generate a proper ICO via System.Drawing.
+	# .NET 8 SDK is available since we just used dotnet publish above.
+	$iconGenDir = Join-Path $env:TEMP "wmp-icon-gen"
+	New-Item -ItemType Directory -Path $iconGenDir -Force | Out-Null
 
-	# Fill purple (BGRA: B=191, G=44, R=123, A=255)
-	for ($i = 0; $i -lt $pixels.Length; $i += 4) {
-		$pixels[$i]   = 191
-		$pixels[$i+1] = 44
-		$pixels[$i+2] = 123
-		$pixels[$i+3] = 255
+	$csCode = @'
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+
+class IconGen {
+    static void Main(string[] args) {
+        string outPath = args[0];
+        using (var bmp = new Bitmap(32, 32))
+        using (var g = Graphics.FromImage(bmp))
+        {
+            g.Clear(Color.FromArgb(255, 123, 44, 191)); // purple
+            using (var font = new Font("Segoe UI", 18, FontStyle.Bold, GraphicsUnit.Pixel))
+            using (var sf = new StringFormat())
+            {
+                sf.Alignment = StringAlignment.Center;
+                sf.LineAlignment = StringAlignment.Center;
+                g.DrawString("W", font, Brushes.White, new RectangleF(0, 0, 32, 32), sf);
+            }
+            using (var fs = new FileStream(outPath, FileMode.Create))
+            {
+                bmp.Save(fs, ImageFormat.Icon);
+            }
+        }
+        Console.WriteLine("Icon saved to " + outPath);
+    }
+}
+'@
+
+	$csFile = Join-Path $iconGenDir "IconGen.cs"
+	[System.IO.File]::WriteAllText($csFile, $csCode)
+
+	# Create a minimal .csproj for compilation
+	$csprojContent = @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+</Project>
+'@
+	$csprojFile = Join-Path $iconGenDir "IconGen.csproj"
+	[System.IO.File]::WriteAllText($csprojFile, $csprojContent)
+
+	# Build and run the icon generator
+	Push-Location $iconGenDir
+	try {
+		dotnet run --configuration Release -- $IconPath
+		if ($LASTEXITCODE -ne 0) { throw "Icon generator failed (exit code $LASTEXITCODE)." }
+	} finally {
+		Pop-Location
 	}
 
-	# Draw a crude white "W"
-	$w  = $imgSize
-	$wh = @(255,255,255,255)
+	Remove-Item $iconGenDir -Recurse -Force -ErrorAction SilentlyContinue
 
-	# Left stroke
-	for ($y = 8; $y -le 24; $y++) {
-		$x1 = 8 + [int](($y - 8) * 0.3)
-		foreach ($x in @($x1, ($x1+1))) {
-			$off = ($y * $w + $x) * 4
-			for ($c = 0; $c -lt 4; $c++) { $pixels[$off+$c] = $wh[$c] }
-		}
+	if (-not (Test-Path $IconPath)) {
+		throw "Icon generation did not produce a file at $IconPath"
 	}
-	# First valley
-	for ($y = 20; $y -le 24; $y++) {
-		$x1 = 14 + [int](($y - 20) * 0.75)
-		foreach ($x in @($x1, ($x1+1))) {
-			$off = ($y * $w + $x) * 4
-			for ($c = 0; $c -lt 4; $c++) { $pixels[$off+$c] = $wh[$c] }
-		}
-	}
-	# Peak
-	for ($y = 16; $y -le 24; $y++) {
-		$x1 = 16 - [int](($y - 16) * 0.25)
-		$x2 = 16 + [int](($y - 16) * 0.25)
-		foreach ($x in @($x1, ($x1+1), $x2, ($x2+1))) {
-			$off = ($y * $w + $x) * 4
-			for ($c = 0; $c -lt 4; $c++) { $pixels[$off+$c] = $wh[$c] }
-		}
-	}
-	# Right stroke
-	for ($y = 8; $y -le 24; $y++) {
-		$x1 = 22 - [int](($y - 8) * 0.3)
-		foreach ($x in @($x1, ($x1+1))) {
-			$off = ($y * $w + $x) * 4
-			for ($c = 0; $c -lt 4; $c++) { $pixels[$off+$c] = $wh[$c] }
-		}
-	}
-
-	# ICO container: ICONDIR + ICONDIRENTRY + BITMAPINFOHEADER + XOR mask + AND mask
-	$bmpHeaderSize = 40
-	$andMaskSize   = [math]::Ceiling($imgSize / 32) * 4 * $imgSize
-	$bmpDataSize   = $pixels.Length + $andMaskSize
-
-	$icoStream = New-Object System.IO.MemoryStream
-	$writer    = New-Object System.IO.BinaryWriter($icoStream)
-
-	# ICONDIR (6 bytes)
-	$writer.Write([uint16]0)
-	$writer.Write([uint16]1)
-	$writer.Write([uint16]1)
-
-	# ICONDIRENTRY (16 bytes)
-	$writer.Write([byte]$imgSize)
-	$writer.Write([byte]$imgSize)
-	$writer.Write([byte]0)
-	$writer.Write([byte]0)
-	$writer.Write([uint16]1)
-	$writer.Write([uint16]32)
-	$writer.Write([uint32]($bmpHeaderSize + $bmpDataSize))
-	$writer.Write([uint32]22)
-
-	# BITMAPINFOHEADER (40 bytes)
-	$writer.Write([uint32]$bmpHeaderSize)
-	$writer.Write([int32]$imgSize)
-	$writer.Write([int32]($imgSize * 2))
-	$writer.Write([uint16]1)
-	$writer.Write([uint16]32)
-	$writer.Write([uint32]0)
-	$writer.Write([uint32]$bmpDataSize)
-	$writer.Write([int32]0)
-	$writer.Write([int32]0)
-	$writer.Write([uint32]0)
-	$writer.Write([uint32]0)
-
-	# XOR mask (bottom-up pixel rows)
-	for ($y = ($imgSize - 1); $y -ge 0; $y--) {
-		for ($x = 0; $x -lt $imgSize; $x++) {
-			$off = ($y * $imgSize + $x) * 4
-			$writer.Write([byte[]]@($pixels[$off], $pixels[$off+1], $pixels[$off+2], $pixels[$off+3]))
-		}
-	}
-
-	# AND mask (all zeros = fully opaque)
-	$writer.Write([byte[]]::new($andMaskSize))
-	$writer.Flush()
-	[System.IO.File]::WriteAllBytes($IconPath, $icoStream.ToArray())
-	$writer.Dispose()
-	$icoStream.Dispose()
 
 	Write-Host "    Placeholder icon created: $IconPath"
 	Write-Host "    Replace it with your real AppIcon.ico at any time." -ForegroundColor DarkYellow

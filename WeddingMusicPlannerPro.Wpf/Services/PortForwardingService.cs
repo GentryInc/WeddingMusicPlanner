@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -114,14 +115,18 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
         // reconnects; without one, localhost.run assigns a random subdomain each time.
         var subdomain = _settings.TunnelSubdomain?.Trim();
         string remoteForward;
+        string sshUser;
         if (!string.IsNullOrWhiteSpace(subdomain))
         {
-            // e.g. -R mywedding:80:127.0.0.1:8420  →  https://mywedding.lhr.life
+            // Custom subdomain: requires the user's own SSH key registered at localhost.run.
+            // Use the default SSH key (no "nokey" prefix) so the agent/key is used.
             remoteForward = $"-R {subdomain}:80:127.0.0.1:{Port}";
+            sshUser = "localhost.run";
         }
         else
         {
             remoteForward = $"-R 80:127.0.0.1:{Port}";
+            sshUser = "nokey@localhost.run";
         }
 
         Process process;
@@ -134,7 +139,7 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
                     FileName = "ssh",
                     Arguments = "-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 " +
                                 "-o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -T " +
-                                $"{remoteForward} nokey@localhost.run",
+                                $"{remoteForward} {sshUser}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -159,23 +164,58 @@ public sealed class PortForwardingService : BackgroundService, IPortForwardingSe
         {
             using var reg = ct.Register(() => { try { process.Kill(entireProcessTree: true); } catch { } });
 
-            // localhost.run prints the assigned public URL on stdout; watch for it.
-            // Its banner also contains admin/docs links on localhost.run itself, so only
-            // accept URLs on other hosts (the tunnel domain, e.g. https://xxxx.lhr.life).
-            var urlRegex = new Regex(@"https://[\w.-]+", RegexOptions.Compiled);
-            while (!process.HasExited)
+            // localhost.run prints the assigned public URL on stdout AND/OR stderr.
+            // Read both streams concurrently so we don't miss it.
+            var urlRegex = new Regex(@"https://[\w.-]+\.lhr\.life", RegexOptions.Compiled);
+            var urlFound = new TaskCompletionSource<bool>();
+
+            async Task ReadStreamAsync(StreamReader reader)
             {
-                var line = await process.StandardOutput.ReadLineAsync(ct).ConfigureAwait(false);
-                if (line is null) break;
-                var m = urlRegex.Match(line);
-                if (m.Success && !m.Value.Contains("localhost.run", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    PublicUrl = m.Value;
-                    IsForwarded = true;
-                    Status = $"Public requests active at {PublicUrl} (tunnel)";
+                    while (!process.HasExited)
+                    {
+                        var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+                        if (line is null) break;
+                        var m = urlRegex.Match(line);
+                        if (m.Success)
+                        {
+                            PublicUrl = m.Value;
+                            IsForwarded = true;
+                            Status = $"Public requests active at {PublicUrl} (tunnel)";
+                            urlFound.TrySetResult(true);
+                        }
+                    }
                 }
+                catch (OperationCanceledException) { }
+                catch { /* stream closed */ }
+                urlFound.TrySetResult(false);
             }
 
+            // Read stdout and stderr in parallel
+            var stdoutTask = ReadStreamAsync(process.StandardOutput);
+            var stderrTask = ReadStreamAsync(process.StandardError);
+
+            // Wait until we find the URL or the process dies
+            var completed = await Task.WhenAny(urlFound.Task, process.WaitForExitAsync(ct)).ConfigureAwait(false);
+
+            if (!IsForwarded)
+            {
+                // Give it a few more seconds in case the URL comes late
+                var timeout = Task.Delay(TimeSpan.FromSeconds(15), ct);
+                await Task.WhenAny(urlFound.Task, timeout).ConfigureAwait(false);
+            }
+
+            if (!IsForwarded)
+            {
+                Status = "Tunnel connected but no public URL was received. " +
+                         (string.IsNullOrWhiteSpace(subdomain)
+                             ? "Try setting a Tunnel Subdomain in Settings for a reliable link."
+                             : $"Check that '{subdomain}' is registered on localhost.run with your SSH key.");
+                return;
+            }
+
+            // Tunnel is live — keep reading until it dies
             await process.WaitForExitAsync(ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
